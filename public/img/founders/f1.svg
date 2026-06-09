@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="Dana Reaves">
+  <!-- PLACEHOLDER headshot — replace with the real founder photo before the event -->
+  <circle cx="100" cy="100" r="96" fill="#ffffff"/>
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#0043e8" stroke-width="8"/>
+  <text x="100" y="104" dominant-baseline="central" text-anchor="middle" font-family="system-ui, 'Segoe UI', sans-serif" font-size="70" font-weight="700" fill="#0043e8">DR</text>
+</svg>

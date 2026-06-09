@@ -1,0 +1,23 @@
+Innovate Alabama — "Around the Horn" Founder Debate Poll
+========================================================
+
+This application is a customized fork of OpenStreamPoll
+(https://github.com/yoanbernabeu/OpenStreamPoll), created by Yoan Bernabeu and
+distributed under the MIT License.
+
+Forked from upstream commit: a0d03b68e8ae63ef7628e9d3fa5c558d45365e4b
+
+The upstream MIT License and copyright notice are retained verbatim in the
+LICENSE file, as the MIT License requires. The MIT License permits commercial
+use, modification, distribution, and rebranding, provided that the copyright
+notice and license text are preserved — which they are.
+
+Customizations in this fork (Innovate Alabama theming, the Around the Horn
+event features, cross-round scoreboard, /obs enhancements, and event hardening)
+are likewise released under the MIT License.
+
+Innovate Alabama brand assets bundled here (public/img/logo.svg,
+public/img/innovate-favicon.png) and the brand palette/typography are the
+property of Innovate Alabama, provided for this commissioned activation. They
+are NOT covered by the MIT License and should not be reused outside this event
+without permission.

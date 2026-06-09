@@ -1,0 +1,115 @@
+{# Around the Horn — OBS stage fragment. Refreshed every 2s by obs/index.
+   Switches between: live round · winner/closing · intro/standby. #}
+
+{# ---- round progress ribbon ---- #}
+<div class="obs-ribbon">
+    {% for r in roundStates %}
+        <div class="obs-pill {{ r.state == 'active' ? 'active' : (r.state == 'done' ? 'done' : '') }}">
+            {{ r.number }} · {{ r.label }}
+        </div>
+    {% endfor %}
+</div>
+
+{% if screen == 'winner' %}
+    {# ===================== WINNER / CLOSING ===================== #}
+    <div class="obs-winner">
+        <div class="obs-crown">★ Audience Champion ★</div>
+        {% if champion %}
+            <div class="obs-wavatar"><img src="{{ champion.founder.headshot }}" alt="{{ champion.founder.name }}"></div>
+            <div class="obs-wname">{{ champion.founder.name }}</div>
+            <div class="obs-wsector">{{ champion.founder.sector }}</div>
+            {% if champion.tie %}<div class="obs-wtie">Tie at the top — moderator's decision</div>{% endif %}
+            <div class="obs-wcharity">Innovate Alabama directs the donation to<br><b>{{ champion.founder.charity }}</b></div>
+        {% else %}
+            <div class="obs-wname">—</div>
+            <div class="obs-wcharity">Tallying the final votes…</div>
+        {% endif %}
+    </div>
+    <div class="obs-winner-score">{{ include('obs/_scoreboard.html.twig') }}</div>
+
+{% elseif screen == 'live' and activePoll %}
+    {# ===================== LIVE ROUND ===================== #}
+    <div class="obs-clockbar">
+        <div class="obs-round-tag">
+            <span class="dot"></span> {{ round ? round.key ~ ' · ' ~ round.label : 'Live vote' }}
+        </div>
+        <div class="obs-clock" x-data="timer('{{ activePoll.endAt|date('Y-m-d\\TH:i:s\\Z') }}')" x-show="!isExpired">
+            <span class="label">Voting</span>
+            <span class="time" :class="{ warn: isWarn, over: isExpired }" x-text="display">--:--</span>
+        </div>
+    </div>
+
+    <div class="obs-layout">
+        <div class="obs-panel">
+            <div class="obs-question">{{ round ? round.title : activePoll.title }}</div>
+
+            {% if round and round.myths is not empty %}
+                <div class="obs-myths">
+                    {% for myth in round.myths %}
+                        <div class="obs-myth"><span class="x">✕</span><s>{{ myth }}</s><span class="verdict">Busted →</span></div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="obs-founders">
+                {% for row in liveResults %}
+                    {% set isLeader = row.isLeader and activePoll.totalVotes > 0 %}
+                    <div class="obs-founder {{ isLeader ? 'leader' : '' }}">
+                        <div class="obs-avatar"><img src="{{ row.founder.headshot }}" alt="{{ row.founder.name }}"></div>
+                        <div class="obs-finfo">
+                            <div class="name">{{ row.founder.name }}</div>
+                            <div class="sector">{{ row.founder.sector }}</div>
+                            <div class="obs-bar-track">
+                                <div class="obs-bar-fill {{ isLeader ? 'leader' : '' }}" style="width: {{ row.pct }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="obs-fstat">
+                            <div class="pct">{{ row.pct }}%</div>
+                            <div class="votes">{{ row.count }} vote{{ row.count == 1 ? '' : 's' }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="obs-voteprompt">
+                {% if qr %}<div class="obs-qr"><img src="{{ qr }}" alt="Scan to vote"></div>{% endif %}
+                <div class="obs-vp-text">
+                    <strong>Scan to cast your vote</strong>
+                    <span>Who made the strongest case this round?</span>
+                </div>
+                <div class="obs-live"><div class="n">{{ activePoll.totalVotes }}</div><div class="l">votes in</div></div>
+            </div>
+        </div>
+
+        {{ include('obs/_scoreboard.html.twig') }}
+    </div>
+
+{% else %}
+    {# ===================== INTRO / STANDBY ===================== #}
+    <div class="obs-layout">
+        <div class="obs-panel">
+            <div class="obs-intro-tag">{{ screen == 'standby' ? 'Between rounds' : 'Welcome' }}</div>
+            <div class="obs-intro-title">{{ eventTitle }} — Alabama Edition</div>
+            <div class="obs-intro-sub">{{ eventTagline }}</div>
+
+            <div class="obs-introfounders">
+                {% for f in founders %}
+                    <div class="obs-introfounder">
+                        <div class="obs-avatar"><img src="{{ f.headshot }}" alt="{{ f.name }}"></div>
+                        <div class="name">{{ f.name }}</div>
+                        <div class="sector">{{ f.sector }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="obs-voteprompt" style="margin-top:30px;">
+                <div class="obs-vp-text">
+                    <strong>{{ screen == 'standby' ? 'Next round coming up' : 'Scan the QR when a round opens' }}</strong>
+                    <span>Three founders. Four rounds. You score it.</span>
+                </div>
+            </div>
+        </div>
+
+        {{ include('obs/_scoreboard.html.twig') }}
+    </div>
+{% endif %}

@@ -1,0 +1,12 @@
+{# Innovate Alabama brand header — shared by admin and the audience voting page.
+   Optional include vars: heading, subtitle. The logo (kit asset) sits at the
+   left; a thin brand-blue rule underlines it. Spacing on the 3px grid. #}
+<header class="w-full bg-base-100 border-b-2" style="border-color: var(--ia-blue);">
+    <div class="container mx-auto px-3 py-3 flex items-center gap-3">
+        <img src="/img/logo.svg" alt="Innovate Alabama" class="h-12 w-12 shrink-0" width="48" height="48">
+        <div class="leading-tight">
+            <div class="font-display text-lg" style="font-weight:200;">{{ heading|default('Around the Horn') }}</div>
+            <div class="text-[11px] uppercase tracking-[0.18em]" style="color: var(--ia-gray);">{{ subtitle|default('Innovate Alabama · Sloss Tech') }}</div>
+        </div>
+    </div>
+</header>

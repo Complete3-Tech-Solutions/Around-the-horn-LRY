@@ -1,0 +1,26 @@
+services:
+  innovate-poll:
+    build:
+      context: .
+    image: innovate-alabama-poll:event
+    restart: unless-stopped
+    ports:
+      # Host port is configurable. Default 80 for clean event URLs; override with
+      # HTTP_PORT (e.g. HTTP_PORT=8088) if the host already uses :80.
+      - "${HTTP_PORT:-80}:80"
+    environment:
+      - APP_ENV=prod
+      # Localhost / LAN demo over http. For a public domain with auto-HTTPS,
+      # set SERVER_NAME=yourdomain.com and add the 443:443 port mapping back.
+      - SERVER_NAME=:80
+      # CHANGE THIS before any real/public deploy. Override via host env or a
+      # .env.local (e.g. `APP_SECRET=$(openssl rand -hex 32)`); the value below
+      # is a fork-specific default and is NOT the public upstream secret.
+      - APP_SECRET=${APP_SECRET:-9f2c7a1e5b8d40c3a6e9f1b2c4d6e8a0f3b5c7d9e1a2b4c6d8e0f2a4b6c8d0e2}
+      # Keep the database on the persisted volume below (aligns with the mount).
+      - DATABASE_URL=sqlite:///%kernel.project_dir%/var/sqlite/data.db
+    volumes:
+      - database_data:/app/var/sqlite
+
+volumes:
+  database_data:

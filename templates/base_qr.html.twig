@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Scan to Vote — Around the Horn{% endblock %}</title>
+        {% include 'components/_favicon.html.twig' %}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('app_qr') }}{% endblock %}
+        {% endblock %}
+    </head>
+    <body class="{% block qr_body_class %}qrx-theme-light{% endblock %}">
+        {% block body %}{% endblock %}
+    </body>
+</html>

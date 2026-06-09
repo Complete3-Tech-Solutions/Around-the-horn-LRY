@@ -1,0 +1,9 @@
+twig:
+    file_name_pattern: '*.twig'
+    globals:
+        # Lets every template read the moderator-selected UI theme + screen.
+        event_state: '@App\Service\Event\EventStateService'
+
+when@test:
+    twig:
+        strict_variables: true

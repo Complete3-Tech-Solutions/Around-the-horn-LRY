@@ -1,0 +1,10 @@
+{% if qrCode %}
+    <div class="qrx">
+        <div class="qrx-card">
+            <img class="qrx-logo" src="/img/logo.svg" alt="Innovate Alabama">
+            <img class="qrx-img" src="{{ qrCode }}" alt="Scan to vote">
+            <div class="qrx-label">Scan to vote</div>
+            {% if poll is defined and poll %}<div class="qrx-code">{{ poll.shortCode }}</div>{% endif %}
+        </div>
+    </div>
+{% endif %}

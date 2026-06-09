@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   Innovate Alabama brand layer — applied on top of the daisyUI 'innovate' theme.
+   Canonical palette from the official kit (branding-kit.pdf + logo.svg):
+     white  #ffffff  background / primary
+     black  #000000  text
+     blue   #0043e8  brand blue — primary accent / result bars
+     cyan   #00B2E3  logo cyan — secondary accent / leading-option highlight
+     glow   #28f2e6  lighter cyan — hover/glow tint ONLY
+     gray   #9a9a9a  neutral
+   Buttons: solid black, 0px radius. Spacing: 3px base grid.
+   ========================================================================= */
+
+/* --- Self-hosted display type ------------------------------------------------
+   The licensed Stardust fonts are NOT shipped in the brand kit. Drop
+   StardustCondensed.woff2 / StardustLocal.woff2 into public/fonts/ and these
+   rules pick them up automatically. Until then font-display:swap renders the
+   approved fallback stack (see --ia-font-display). */
+@font-face {
+    font-family: "Stardust Condensed";
+    src: url("/fonts/StardustCondensed.woff2") format("woff2");
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Stardust Local";
+    src: url("/fonts/StardustLocal.woff2") format("woff2");
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    --ia-white: #ffffff;
+    --ia-black: #000000;
+    --ia-blue: #0043e8;
+    --ia-cyan: #00b2e3;
+    --ia-cyan-glow: #28f2e6;
+    --ia-gray: #9a9a9a;
+    --ia-space: 3px; /* base spacing grid (use multiples of 3px) */
+    --ia-font-display: "Stardust Condensed", "Stardust Local", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ia-font-body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --ia-font-serif: "Times New Roman", Times, serif;
+}
+
+/* Background + text come from the active daisyUI theme (light = innovate,
+   dark = innovate-dark; moderator-toggled). Only the body font is fixed here. */
+body {
+    font-family: var(--ia-font-body);
+}
+
+/* Display / headings: Stardust (with fallback), light weight per the kit. */
+h1,
+h2,
+h3,
+h4,
+.font-display {
+    font-family: var(--ia-font-display);
+    font-weight: 200;
+    letter-spacing: 0.3px;
+}
+
+/* Intentional serif (Times New Roman) — opt-in only, never the default UI font. */
+.font-serif-body {
+    font-family: var(--ia-font-serif);
+    font-weight: 400;
+}
+
+/* Kit buttons: square corners everywhere (belt-and-suspenders with --rounded-btn). */
+.btn {
+    border-radius: 0 !important;
+}
+
+/* Brand utility hooks for plain (non-daisyUI) markup. */
+.ia-bg-blue { background-color: var(--ia-blue); }
+.ia-bg-cyan { background-color: var(--ia-cyan); }
+.ia-text-blue { color: var(--ia-blue); }
+.ia-text-cyan { color: var(--ia-cyan); }
+.ia-text-gray { color: var(--ia-gray); }

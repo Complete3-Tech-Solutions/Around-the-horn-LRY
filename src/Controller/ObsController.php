@@ -1,0 +1,172 @@
+<?php
+
+namespace App\Controller;
+
+use App\Event\EventConfig;
+use App\Service\Event\EventStateService;
+use App\Service\Poll\PollService;
+use App\Service\Qr\QrService;
+use App\Service\Scoreboard\ScoreboardService;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
+/**
+ * Browser-source endpoints for OBS / the LED wall. All read-only and public so
+ * the production switcher can drop the URLs in without auth.
+ *
+ *   /obs            — the live stage shell (persistent logo + 2s-refreshing stage)
+ *   /obs/results    — the stage fragment (round, founders+bars, scoreboard, winner)
+ *   /obs/qr         — the auto-updating QR browser source
+ *   /obs/qr/results — the QR fragment (regenerates for the active round)
+ *
+ * Background modes (composite over a video feed): ?bg=transparent (default),
+ * ?bg=white, ?bg=chroma (green key), ?bg=stage (opaque branded fill).
+ * Force a screen with ?screen=winner|intro|auto (default auto / moderator flag).
+ */
+class ObsController extends AbstractController
+{
+    private const BG_MODES = ['transparent', 'white', 'chroma', 'stage'];
+
+    public function __construct(
+        private readonly PollService $pollService,
+        private readonly QrService $qrService,
+        private readonly ScoreboardService $scoreboard,
+        private readonly EventStateService $eventState,
+        private readonly EventConfig $eventConfig,
+    ) {
+    }
+
+    #[Route('/obs', name: 'app_obs')]
+    public function index(Request $request): Response
+    {
+        $dark = 'innovate-dark' === $this->eventState->getTheme();
+
+        return $this->render('obs/index.html.twig', [
+            'bg' => $this->resolveBg($request, $dark),
+            'dark' => $dark,
+            'screen' => $request->query->get('screen'),
+        ]);
+    }
+
+    #[Route('/obs/results', name: 'app_obs_results')]
+    public function results(Request $request): Response
+    {
+        $active = $this->scoreboard->activePoll();
+        $decided = $this->scoreboard->decidedRoundCount();
+        $total = $this->scoreboard->totalRoundCount();
+
+        // Screen selection: explicit ?screen= wins, else the persisted moderator
+        // flag, else auto-derive from poll/scoreboard state.
+        $pref = $request->query->get('screen') ?: $this->eventState->getScreen();
+        if ('winner' === $pref) {
+            $screen = 'winner';
+        } elseif ('intro' === $pref) {
+            $screen = 'intro';
+        } elseif (null !== $active) {
+            $screen = 'live';
+        } elseif ($total > 0 && $decided >= $total) {
+            $screen = 'winner';
+        } elseif ($decided > 0) {
+            $screen = 'standby';
+        } else {
+            $screen = 'intro';
+        }
+
+        $qr = null;
+        if (null !== $active) {
+            $url = $this->generateUrl(
+                'app_poll_show',
+                ['shortCode' => $active->getShortCode()],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            );
+            $qr = $this->qrService->generateQrCode($url);
+        }
+
+        return $this->render('obs/_results.html.twig', [
+            'screen' => $screen,
+            'activePoll' => $active,
+            'round' => null !== $active && null !== $active->getRoundNumber()
+                ? $this->eventConfig->round($active->getRoundNumber())
+                : null,
+            'roundStates' => $this->buildRoundStates($active),
+            'liveResults' => null !== $active ? $this->scoreboard->liveResults($active) : [],
+            'standings' => $this->scoreboard->standings(),
+            'champion' => $this->scoreboard->champion(),
+            'decided' => $decided,
+            'total' => $total,
+            'founders' => $this->eventConfig->founders(),
+            'qr' => $qr,
+            'eventTitle' => EventConfig::EVENT_TITLE,
+            'eventSubtitle' => EventConfig::EVENT_SUBTITLE,
+            'eventTagline' => EventConfig::EVENT_TAGLINE,
+        ]);
+    }
+
+    #[Route('/obs/qr', name: 'app_obs_qr')]
+    public function qr(): Response
+    {
+        return $this->render('obs/qr.html.twig', [
+            'dark' => 'innovate-dark' === $this->eventState->getTheme(),
+        ]);
+    }
+
+    #[Route('/obs/qr/results', name: 'app_obs_qr_results')]
+    public function qrResults(): Response
+    {
+        $poll = $this->pollService->getActivePoll();
+
+        if (null === $poll) {
+            return new Response('');
+        }
+
+        $url = $this->generateUrl(
+            'app_poll_show',
+            ['shortCode' => $poll->getShortCode()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        return $this->render('obs/_qr_results.html.twig', [
+            'qrCode' => $this->qrService->generateQrCode($url),
+            'poll' => $poll,
+        ]);
+    }
+
+    private function resolveBg(Request $request, bool $dark): string
+    {
+        $bg = $request->query->get('bg');
+        if (null !== $bg && \in_array($bg, self::BG_MODES, true)) {
+            return $bg; // explicit production override (e.g. transparent/chroma)
+        }
+
+        // No explicit ?bg= → derive the page background from the moderator theme.
+        return $dark ? 'stage' : 'transparent';
+    }
+
+    /**
+     * @return list<array{number:int,label:string,state:string}>
+     */
+    private function buildRoundStates(?\App\Entity\Poll $active): array
+    {
+        $roundPolls = [];
+        foreach ($this->scoreboard->roundPolls() as $poll) {
+            $roundPolls[$poll->getRoundNumber()] = $poll;
+        }
+
+        $states = [];
+        foreach ($this->eventConfig->rounds() as $round) {
+            $poll = $roundPolls[$round['number']] ?? null;
+            $state = 'pending';
+            if (null !== $active && null !== $poll && $active->getId() === $poll->getId()) {
+                $state = 'active';
+            } elseif (null !== $poll && $this->scoreboard->isRoundDecided($poll, $active)) {
+                $state = 'done';
+            }
+            $states[] = ['number' => $round['number'], 'label' => $round['label'], 'state' => $state];
+        }
+
+        return $states;
+    }
+}
