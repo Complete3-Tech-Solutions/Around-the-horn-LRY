@@ -181,6 +181,40 @@ class ScoreboardService
     }
 
     /**
+     * The most recently decided round poll (rounds run in order), or null
+     * before any round closes — drives the between-rounds recap.
+     */
+    public function lastDecidedPoll(): ?Poll
+    {
+        $active = $this->activePoll();
+        $last = null;
+        foreach ($this->roundPolls() as $poll) {
+            if ($this->isRoundDecided($poll, $active)) {
+                $last = $poll;
+            }
+        }
+
+        return $last;
+    }
+
+    /**
+     * Founder(s) with the most votes in a poll — several when tied.
+     *
+     * @return list<array{key:string,name:string,sector:string,initials:string,headshot:string,charity:string,color:string}>
+     */
+    public function roundWinners(Poll $poll): array
+    {
+        $winners = [];
+        foreach ($this->liveResults($poll) as $row) {
+            if ($row['isLeader'] && $row['count'] > 0) {
+                $winners[] = $row['founder'];
+            }
+        }
+
+        return $winners;
+    }
+
+    /**
      * EventConfig round metadata for the active poll, or null if none is live.
      *
      * @return array{number:int,key:string,label:string,title:string,question:string,myths:list<string>}|null

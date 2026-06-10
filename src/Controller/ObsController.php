@@ -81,13 +81,29 @@ class ObsController extends AbstractController
             $qr = $this->qrService->generateQrCode($url);
         }
 
+        // Between-rounds recap: who took the last round, what's coming next.
+        $roundStates = $this->buildRoundStates($active);
+        $lastDecided = $this->scoreboard->lastDecidedPoll();
+        $nextRound = null;
+        foreach ($roundStates as $rs) {
+            if ('pending' === $rs['state']) {
+                $nextRound = $this->eventConfig->round($rs['number']);
+                break;
+            }
+        }
+
         return $this->render('obs/_results.html.twig', [
             'screen' => $screen,
             'activePoll' => $active,
             'round' => null !== $active && null !== $active->getRoundNumber()
                 ? $this->eventConfig->round($active->getRoundNumber())
                 : null,
-            'roundStates' => $this->buildRoundStates($active),
+            'roundStates' => $roundStates,
+            'lastRound' => null !== $lastDecided && null !== $lastDecided->getRoundNumber()
+                ? $this->eventConfig->round($lastDecided->getRoundNumber())
+                : null,
+            'lastWinners' => null !== $lastDecided ? $this->scoreboard->roundWinners($lastDecided) : [],
+            'nextRound' => $nextRound,
             'liveResults' => null !== $active ? $this->scoreboard->liveResults($active) : [],
             'standings' => $this->scoreboard->standings(),
             'champion' => $this->scoreboard->champion(),
