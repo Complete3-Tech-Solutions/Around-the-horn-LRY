@@ -2,6 +2,7 @@
 /.well-known/
 /.user.ini
 /.htaccess
+/.deploy-webhook-secret
 ###< server-local ###
 
 ###> symfony/framework-bundle ###
