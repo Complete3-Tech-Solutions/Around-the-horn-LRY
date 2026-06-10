@@ -1,0 +1,8 @@
+framework:
+    trusted_proxies: 'private_ranges'
+    trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port', 'x-forwarded-prefix']
+    router:
+        default_uri: 'https://innovatealabama.c3tech.app'
+    session:
+        cookie_secure: true
+        cookie_samesite: lax

@@ -1,0 +1,112 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{% if app.request.attributes.get('_route') == 'app_admin_edit' %}Edit Poll{% else %}New Poll{% endif %} - OpenStreamPoll{% endblock %}
+
+{% block body %}
+    {% set question1_id = form.question1.vars.id %}
+    {% set question2_id = form.question2.vars.id %}
+
+    <div class="min-h-screen">
+        <div class="container mx-auto px-2 py-2">
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body p-4">
+                    <h2 class="text-lg font-bold mb-2">
+                        {% if app.request.attributes.get('_route') == 'app_admin_edit' %}
+                            Edit Poll
+                        {% else %}
+                            New Poll
+                        {% endif %}
+                    </h2>
+
+                    {{ form_start(form, {'attr': {'class': 'space-y-3', 'x-data': '{
+                        canSubmit: false,
+                        init() {
+                            this.$nextTick(() => {
+                                this.checkSubmission();
+                            });
+                        },
+                        checkSubmission() {
+                            const q1 = document.getElementById("' ~ question1_id ~ '");
+                            const q2 = document.getElementById("' ~ question2_id ~ '");
+                            
+                            if (q1 && q2) {
+                                const q1Value = q1.value.trim();
+                                const q2Value = q2.value.trim();
+                                this.canSubmit = q1Value.length > 0 && q2Value.length > 0;
+                            } else {
+                                this.canSubmit = false;
+                            }
+                        }
+                    }'}}) }}
+                        <div class="flex flex-col gap-3">
+                            {# Question principale #}
+                            <div class="card bg-base-300 p-3">
+                                <div class="form-control">
+                                    {{ form_label(form.title, 'Question', {'label_attr': {'class': 'label py-1'}}) }}
+                                    {{ form_widget(form.title, {
+                                        'attr': {
+                                            'class': 'textarea textarea-bordered textarea-sm w-full',
+                                            'placeholder': 'Enter your question here...',
+                                            'rows': '2'
+                                        }
+                                    }) }}
+                                    {{ form_errors(form.title) }}
+                                </div>
+                            </div>
+
+                            {# Settings #}
+                            <div class="card bg-base-300 p-3">
+                                <div class="flex items-center gap-4">
+                                    <div class="join flex-1">
+                                        {{ form_widget(form.startAt, {'attr': {'class': 'hidden'}}) }}
+                                        {{ form_widget(form.endAt, {'attr': {'class': 'hidden'}}) }}
+                                        {{ form_label(form.duration, 'Duration:', {'label_attr': {'class': 'join-item btn btn-sm w-24'}}) }}
+                                        {{ form_widget(form.duration, {'attr': {'class': 'join-item select select-sm select-bordered flex-1'}}) }}
+                                        <span class="join-item btn btn-sm w-24">minutes</span>
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label cursor-pointer gap-2">
+                                            <span class="label-text">Draft</span>
+                                            {{ form_widget(form.isDraft, {'attr': {'class': 'toggle toggle-primary toggle-sm'}}) }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# Section réponses possibles #}
+                            <div class="card bg-base-300 p-3">
+                                <h3 class="text-sm font-bold mb-2">Answer Options</h3>
+                                
+                                <div class="flex flex-col gap-2">
+                                    {% for i in 1..5 %}
+                                        <div class="form-control">
+                                            {{ form_widget(attribute(form, 'question' ~ i), {
+                                                'attr': {
+                                                    'class': 'input input-bordered input-sm w-full',
+                                                    'placeholder': i <= 2 ? 'Required option ' ~ i : 'Option ' ~ i,
+                                                    '@input.debounce.250ms': 'checkSubmission()',
+                                                    'required': i <= 2,
+                                                    'type': 'text'
+                                                }
+                                            }) }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-2 mt-2">
+                            <a href="{{ path('app_admin_index') }}" class="btn btn-ghost btn-sm">Cancel</a>
+                            <button type="submit" 
+                                    class="btn btn-primary btn-sm"
+                                    :disabled="!canSubmit"
+                                    :class="{'btn-disabled': !canSubmit}">
+                                {{ app.request.attributes.get('_route') == 'app_admin_edit' ? 'Update' : 'Create' }}
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

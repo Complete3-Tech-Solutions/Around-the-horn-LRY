@@ -1,0 +1,30 @@
+{% extends 'base_obs.html.twig' %}
+
+{% block title %}Around the Horn — OBS Display{% endblock %}
+{% block body_class %}obs-bg-{{ bg|default('transparent') }} obs-theme-{{ dark|default(false) ? 'dark' : 'light' }}{% endblock %}
+
+{% block body %}
+<div class="obs-wrap">
+    {# Persistent brand lockup (logo corner) — lives in the shell so it never
+       flickers when the stage fragment refreshes every 2 seconds. #}
+    <div class="obs-topbar">
+        <div class="obs-brand">
+            <img class="obs-logo" src="/img/logo.svg" alt="Innovate Alabama">
+            <div>
+                <div class="t1">Around the Horn</div>
+                <div class="t2">Innovate Alabama · Sloss Tech</div>
+            </div>
+        </div>
+    </div>
+
+    {# Stage fragment: auto-loads then refreshes every 2s (URL-addressable). #}
+    <div id="obs-stage"
+         hx-get="{{ path('app_obs_results', {'bg': bg, 'screen': screen}) }}"
+         hx-trigger="load, every 2s">
+        <div class="obs-ribbon"></div>
+    </div>
+</div>
+
+{# Second persistent logo, bottom-right corner watermark. #}
+<img class="obs-watermark" src="/img/logo.svg" alt="">
+{% endblock %}

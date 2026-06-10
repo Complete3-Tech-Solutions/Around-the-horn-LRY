@@ -1,0 +1,99 @@
+{# Moderator "run of show" control deck — the live event cockpit. Activate/close
+   rounds (one live at a time), flip the OBS winner screen, and see standings.
+   Defaults keep it safe even before the seed command has run. #}
+{% set controlRounds = controlRounds|default([]) %}
+{% set standings = standings|default([]) %}
+{% set eventScreen = eventScreen|default('auto') %}
+{% set seeded = seeded|default(false) %}
+
+<div class="container mx-auto px-3 pt-3">
+    <div class="card bg-base-200 border-2" style="border-color: var(--ia-blue);">
+        <div class="card-body p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h2 class="text-xl font-display" style="font-weight:200;">Run of Show — Moderator Control</h2>
+                <div class="flex gap-2">
+                    <a href="{{ path('app_obs') }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline">Open /obs ↗</a>
+                    <a href="{{ path('app_obs_qr') }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline">Open /obs/qr ↗</a>
+                </div>
+            </div>
+
+            {% if not seeded %}
+                <div class="alert alert-warning text-sm mb-3">
+                    Rounds not seeded yet. Run <code class="font-mono">php bin/console app:event:setup</code> inside the container.
+                </div>
+            {% endif %}
+
+            {# Rounds — one live at a time #}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {% for r in controlRounds %}
+                    <div class="flex items-center gap-3 p-3 bg-base-100 border border-base-300">
+                        <div class="text-2xl font-display w-8 text-center" style="font-weight:200;">{{ r.number }}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-semibold truncate">{{ r.label }}</div>
+                            <div class="text-xs ia-text-gray truncate">{{ r.title }}</div>
+                            <div class="mt-1 flex gap-1 flex-wrap">
+                                {% if r.isActive %}<span class="badge badge-success badge-sm">LIVE</span>
+                                {% elseif r.isDecided %}<span class="badge badge-neutral badge-sm">Closed</span>
+                                {% elseif r.poll %}<span class="badge badge-ghost badge-sm">Ready</span>
+                                {% else %}<span class="badge badge-warning badge-sm">Not seeded</span>{% endif %}
+                                {% if r.poll %}<span class="badge badge-outline badge-sm">{{ r.votes }} votes</span>{% endif %}
+                            </div>
+                        </div>
+                        <div class="shrink-0">
+                            {% if r.poll %}
+                                {% if r.isActive %}
+                                    <form method="post" action="{{ path('app_admin_round_close', {'id': r.poll.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                        <button class="btn btn-sm btn-neutral w-28">Close round</button>
+                                    </form>
+                                {% else %}
+                                    <form method="post" action="{{ path('app_admin_round_activate', {'id': r.poll.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                        <button class="btn btn-sm btn-primary w-28">Go LIVE</button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {# OBS screen control + standings #}
+            <div class="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-base-300">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-sm ia-text-gray">OBS screen:</span>
+                    <span class="badge badge-primary">{{ eventScreen }}</span>
+                    <form method="post" action="{{ path('app_admin_event_screen', {'screen': 'winner'}) }}" class="inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('event_screen') }}">
+                        <button class="btn btn-xs btn-neutral">Reveal winner</button>
+                    </form>
+                    <form method="post" action="{{ path('app_admin_event_screen', {'screen': 'auto'}) }}" class="inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('event_screen') }}">
+                        <button class="btn btn-xs btn-outline">Resume live</button>
+                    </form>
+                    <form method="post" action="{{ path('app_admin_event_screen', {'screen': 'intro'}) }}" class="inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('event_screen') }}">
+                        <button class="btn btn-xs btn-outline">Intro</button>
+                    </form>
+                    <span class="mx-1 opacity-30">|</span>
+                    <span class="text-sm ia-text-gray">Theme:</span>
+                    <span class="badge badge-primary">{{ event_state.theme == 'innovate-dark' ? 'dark' : 'light' }}</span>
+                    <form method="post" action="{{ path('app_admin_event_theme', {'theme': 'innovate'}) }}" class="inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('event_theme') }}">
+                        <button class="btn btn-xs btn-outline">Light</button>
+                    </form>
+                    <form method="post" action="{{ path('app_admin_event_theme', {'theme': 'innovate-dark'}) }}" class="inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('event_theme') }}">
+                        <button class="btn btn-xs btn-neutral">Dark</button>
+                    </form>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="ia-text-gray">Standings:</span>
+                    {% for s in standings %}
+                        <span class="font-semibold">{{ s.founder.initials }} {{ s.points }}</span>{% if not loop.last %}<span class="ia-text-gray">·</span>{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

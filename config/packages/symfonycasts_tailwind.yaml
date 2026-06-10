@@ -1,0 +1,10 @@
+symfonycasts_tailwind:
+    # Pin the Tailwind standalone CLI to the v3 line.
+    #
+    # This project's tailwind.config.js and the daisyUI v4 plugin are Tailwind v3
+    # style. Without this pin the bundle downloads the LATEST CLI (now v4), which
+    # ignores tailwind.config.js's JS `plugins: [require("daisyui")]` — silently
+    # dropping every daisyUI component and the custom "innovate" theme and leaving
+    # the admin/login/voting pages unstyled. v3.4.x keeps daisyUI working, and
+    # pinning it also makes the asset build reproducible for the event.
+    binary_version: 'v3.4.16'

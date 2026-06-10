@@ -1,0 +1,21 @@
+{# Cumulative cross-round scoreboard (shared by the live, standby and winner
+   screens). Expects `standings` in context. #}
+<div class="obs-score">
+    <h3>Live Scoreboard</h3>
+    {% set topPoints = standings|length > 0 ? standings[0].points : 0 %}
+    {% for row in standings %}
+        <div class="obs-srow {{ row.points == topPoints and topPoints > 0 ? 'lead' : '' }}">
+            <div class="obs-rank">{{ loop.index }}</div>
+            <div class="obs-savatar"><img src="{{ row.founder.headshot }}" alt="{{ row.founder.name }}"></div>
+            <div>
+                <div class="obs-sname">{{ row.founder.name }}</div>
+                <div class="obs-ssector">{{ row.founder.sector }}</div>
+            </div>
+            <div class="obs-spts">{{ row.points }}</div>
+        </div>
+    {% endfor %}
+    <div class="obs-charity">
+        Audience scoring across all rounds crowns the champion. Innovate Alabama
+        donates to the winner's <b>charity of choice</b>.
+    </div>
+</div>

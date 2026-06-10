@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="innovate">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Around the Horn — Innovate Alabama{% endblock %}</title>
+        {% include 'components/_favicon.html.twig' %}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('app_obs') }}{% endblock %}
+        {% endblock %}
+    </head>
+    <body class="{% block body_class %}obs-bg-transparent{% endblock %}">
+        {% block body %}{% endblock %}
+    </body>
+</html>

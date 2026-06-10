@@ -1,0 +1,183 @@
+/* =========================================================================
+   Around the Horn — OBS / LED-wall stage. Innovate Alabama palette.
+   (This bundle is separate from app.css, so the brand tokens are redeclared.)
+   Result bars: brand blue #0043e8, with cyan #00B2E3 highlighting the leader.
+   ========================================================================= */
+:root {
+    --ia-white: #ffffff;
+    --ia-black: #000000;
+    --ia-blue: #0043e8;
+    --ia-cyan: #00b2e3;
+    --ia-cyan-glow: #28f2e6;
+    --ia-gray: #9a9a9a;
+    --ia-font-display: "Stardust Condensed", "Stardust Local", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ia-font-body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { font-family: var(--ia-font-body); color: var(--ia-black); }
+
+/* ---- Background modes (set on <body> by obs/index) -------------------------
+   transparent = composite over the camera feed (default)
+   white       = solid white per the kit
+   chroma      = solid green for keying in the switcher
+   stage       = opaque branded dark fill for an LED wall with no video behind */
+.obs-bg-transparent { background: transparent !important; }
+.obs-bg-white { background: var(--ia-white); }
+.obs-bg-chroma { background: #00b140; }
+.obs-bg-stage {
+    background:
+        radial-gradient(1200px 700px at 85% -10%, rgba(0, 67, 232, 0.25), transparent 60%),
+        radial-gradient(1000px 600px at 0% 110%, rgba(0, 178, 227, 0.18), transparent 55%),
+        linear-gradient(160deg, #020b1f, #06152d 45%, #0a1e3f);
+}
+
+.obs-wrap { max-width: 1820px; margin: 0 auto; padding: 24px 30px 30px; }
+
+/* ---- persistent brand top bar (logo corner) ---- */
+.obs-topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 18px;
+    padding-bottom: 15px; border-bottom: 3px solid var(--ia-blue);
+}
+.obs-brand { display: flex; align-items: center; gap: 15px; }
+.obs-logo { width: 60px; height: 60px; flex: none; }
+.obs-brand .t1 { font-family: var(--ia-font-display); font-weight: 200; font-size: 26px; line-height: 1.05; }
+.obs-bg-stage .obs-brand .t1 { color: #fff; }
+.obs-brand .t2 { font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ia-gray); margin-top: 3px; }
+
+.obs-watermark { position: fixed; right: 24px; bottom: 18px; width: 54px; height: 54px; opacity: 0.55; }
+
+/* ---- round progress ribbon ---- */
+.obs-ribbon { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 15px; min-height: 36px; }
+.obs-pill {
+    font-size: 14px; padding: 6px 15px; border: 1px solid var(--ia-gray);
+    color: var(--ia-gray); background: #fff; white-space: nowrap;
+}
+.obs-bg-stage .obs-pill { background: rgba(255, 255, 255, 0.06); }
+.obs-pill.active { background: var(--ia-blue); color: #fff; border-color: var(--ia-blue); font-weight: 600; }
+.obs-pill.done { border-color: var(--ia-cyan); color: var(--ia-cyan); }
+
+/* ---- clock bar ---- */
+.obs-clockbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 18px; }
+.obs-round-tag {
+    display: inline-flex; align-items: center; gap: 9px; font-size: 15px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--ia-cyan); font-weight: 700;
+}
+.obs-round-tag .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ia-cyan); box-shadow: 0 0 12px var(--ia-cyan); }
+.obs-bg-stage .obs-round-tag { color: var(--ia-cyan-glow); }
+.obs-clock { display: flex; align-items: center; gap: 9px; }
+.obs-clock .label { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ia-gray); }
+.obs-clock .time { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 34px; color: var(--ia-blue); min-width: 96px; text-align: right; }
+.obs-clock .time.warn { color: #cc8800; }
+.obs-clock .time.over { color: #b00020; }
+
+/* ---- layout ---- */
+.obs-layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; margin-top: 21px; align-items: start; }
+@media (max-width: 1100px) { .obs-layout { grid-template-columns: 1fr; } }
+
+.obs-panel { background: #fff; border-top: 6px solid var(--ia-blue); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18); padding: 30px; }
+
+.obs-question { font-family: var(--ia-font-display); font-weight: 200; font-size: 42px; line-height: 1.12; margin: 0; max-width: 24ch; }
+
+/* ---- myths (round 3) ---- */
+.obs-myths { display: grid; gap: 9px; margin-top: 21px; }
+.obs-myth { display: flex; align-items: center; gap: 15px; padding: 15px 18px; background: #f4f4f4; border-left: 4px solid var(--ia-blue); }
+.obs-myth .x { width: 30px; height: 30px; flex: none; display: grid; place-items: center; background: var(--ia-blue); color: #fff; font-weight: 800; border-radius: 50%; }
+.obs-myth s { color: var(--ia-gray); font-size: 19px; }
+.obs-myth .verdict { margin-left: auto; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ia-cyan); font-weight: 700; }
+
+/* ---- founders + vote bars ---- */
+.obs-founders { display: flex; flex-direction: column; gap: 18px; margin-top: 24px; }
+.obs-founder { display: grid; grid-template-columns: 84px 1fr 132px; gap: 18px; align-items: center; }
+.obs-avatar { width: 84px; height: 84px; border-radius: 50%; overflow: hidden; background: #fff; border: 3px solid var(--ia-gray); }
+.obs-founder.leader .obs-avatar { border-color: var(--ia-cyan); }
+.obs-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.obs-finfo .name { font-weight: 700; font-size: 24px; }
+.obs-bg-stage .obs-finfo .name { color: #fff; }
+.obs-finfo .sector { font-size: 15px; color: var(--ia-gray); margin-top: 2px; }
+.obs-bar-track { height: 18px; background: #e6e6e6; margin-top: 12px; overflow: hidden; }
+.obs-bar-fill { height: 100%; width: 0; background: var(--ia-blue); transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.obs-bar-fill.leader { background: var(--ia-cyan); }
+.obs-fstat { text-align: right; }
+.obs-fstat .pct { font-weight: 800; font-size: 30px; font-variant-numeric: tabular-nums; }
+.obs-bg-stage .obs-fstat .pct { color: #fff; }
+.obs-founder.leader .obs-fstat .pct { color: var(--ia-cyan); }
+.obs-fstat .votes { font-size: 14px; color: var(--ia-gray); }
+
+/* ---- vote prompt + inline QR ---- */
+.obs-voteprompt { display: flex; align-items: center; gap: 21px; margin-top: 27px; padding: 18px; background: #f4f4f4; border: 1px solid #e6e6e6; }
+.obs-qr { width: 96px; height: 96px; background: #fff; padding: 6px; flex: none; border: 1px solid #e6e6e6; }
+.obs-qr img { width: 100%; height: 100%; display: block; }
+.obs-vp-text strong { display: block; font-size: 21px; font-weight: 700; }
+.obs-vp-text span { font-size: 15px; color: var(--ia-gray); }
+.obs-live { margin-left: auto; text-align: right; }
+.obs-live .n { font-size: 36px; font-weight: 800; color: var(--ia-blue); font-variant-numeric: tabular-nums; }
+.obs-live .l { font-size: 13px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ia-gray); }
+
+/* ---- scoreboard side panel ---- */
+.obs-score { background: #fff; border-top: 6px solid var(--ia-cyan); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18); padding: 27px; }
+.obs-score h3 { margin: 0 0 15px; font-family: var(--ia-font-display); font-weight: 200; font-size: 22px; text-transform: uppercase; letter-spacing: 0.12em; }
+.obs-srow { display: grid; grid-template-columns: 30px 48px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid #e6e6e6; }
+.obs-srow:last-child { border-bottom: none; }
+.obs-rank { font-weight: 800; font-size: 20px; color: var(--ia-gray); text-align: center; }
+.obs-srow.lead .obs-rank { color: var(--ia-blue); }
+.obs-savatar { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; border: 2px solid var(--ia-gray); }
+.obs-srow.lead .obs-savatar { border-color: var(--ia-cyan); }
+.obs-savatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.obs-sname { font-weight: 600; font-size: 18px; }
+.obs-ssector { font-size: 12px; color: var(--ia-gray); }
+.obs-spts { font-weight: 800; font-size: 26px; font-variant-numeric: tabular-nums; color: var(--ia-blue); }
+.obs-charity { margin-top: 15px; padding: 15px; background: #f4f4f4; font-size: 14px; color: #333; line-height: 1.5; }
+.obs-charity b { color: var(--ia-black); }
+
+/* ---- winner / closing ---- */
+.obs-winner { background: #fff; border-top: 6px solid var(--ia-blue); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); padding: 54px 42px; text-align: center; margin-top: 21px; }
+.obs-crown { font-size: 16px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ia-cyan); font-weight: 700; }
+.obs-wavatar { width: 150px; height: 150px; border-radius: 50%; overflow: hidden; border: 5px solid var(--ia-cyan); margin: 18px auto; }
+.obs-wavatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.obs-wname { font-family: var(--ia-font-display); font-weight: 200; font-size: 64px; line-height: 1.05; margin: 0 0 6px; }
+.obs-wsector { font-size: 20px; color: var(--ia-blue); font-weight: 600; }
+.obs-wtie { margin-top: 12px; font-size: 16px; color: var(--ia-gray); }
+.obs-wcharity { margin-top: 24px; font-size: 18px; color: #333; line-height: 1.6; }
+.obs-wcharity b { color: var(--ia-black); }
+.obs-winner-score { max-width: 520px; margin: 24px auto 0; }
+
+/* ---- intro / standby ---- */
+.obs-intro-tag { font-size: 15px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ia-cyan); font-weight: 700; }
+.obs-intro-title { font-family: var(--ia-font-display); font-weight: 200; font-size: 54px; line-height: 1.05; margin: 12px 0; }
+.obs-bg-stage .obs-intro-title { color: #fff; }
+.obs-intro-sub { font-size: 19px; color: var(--ia-gray); max-width: 48ch; }
+.obs-introfounders { display: flex; gap: 24px; margin-top: 30px; flex-wrap: wrap; }
+.obs-introfounder { display: flex; flex-direction: column; align-items: center; gap: 9px; width: 150px; text-align: center; }
+.obs-introfounder .obs-avatar { width: 96px; height: 96px; }
+.obs-introfounder .name { font-weight: 700; font-size: 17px; }
+.obs-bg-stage .obs-introfounder .name { color: #fff; }
+.obs-introfounder .sector { font-size: 12px; color: var(--ia-gray); }
+
+/* ---- Dark theme (moderator-toggled) — dark panels, light text ---------------
+   Bars stay brand blue/cyan (readable on dark). QR image keeps its own backing. */
+.obs-theme-dark .obs-panel,
+.obs-theme-dark .obs-score,
+.obs-theme-dark .obs-winner { background: #111111; }
+.obs-theme-dark .obs-question,
+.obs-theme-dark .obs-finfo .name,
+.obs-theme-dark .obs-fstat .pct,
+.obs-theme-dark .obs-sname,
+.obs-theme-dark .obs-wname,
+.obs-theme-dark .obs-intro-title,
+.obs-theme-dark .obs-score h3,
+.obs-theme-dark .obs-vp-text strong,
+.obs-theme-dark .obs-brand .t1 { color: #ffffff; }
+.obs-theme-dark .obs-founder.leader .obs-fstat .pct { color: var(--ia-cyan); }
+.obs-theme-dark .obs-bar-track { background: #2a2a2a; }
+.obs-theme-dark .obs-myth,
+.obs-theme-dark .obs-voteprompt,
+.obs-theme-dark .obs-charity { background: #1a1a1a; }
+.obs-theme-dark .obs-voteprompt { border-color: #2a2a2a; }
+.obs-theme-dark .obs-myth s { color: #cccccc; }
+.obs-theme-dark .obs-charity { color: #cccccc; }
+.obs-theme-dark .obs-charity b { color: #ffffff; }
+.obs-theme-dark .obs-srow { border-color: #2a2a2a; }
+.obs-theme-dark .obs-pill { background: rgba(255, 255, 255, 0.06); }
+.obs-theme-dark .obs-wsector { color: var(--ia-cyan); }

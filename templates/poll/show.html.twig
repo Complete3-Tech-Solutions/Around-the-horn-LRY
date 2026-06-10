@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ poll.title }} — Around the Horn{% endblock %}
+
+{% block body %}
+{% include 'components/_brand_header.html.twig' with {'heading': 'Around the Horn', 'subtitle': 'Cast your vote'} %}
+
+<div class="min-h-screen bg-base-100 py-6">
+    <div class="container mx-auto px-3 max-w-2xl">
+        {# Question + round timer #}
+        <div class="flex flex-col sm:flex-row items-center gap-3 justify-between mb-6">
+            <h1 class="text-3xl font-display text-center sm:text-left" style="font-weight:200;">{{ poll.title }}</h1>
+            <div x-data="timer('{{ poll.endAt|date('Y-m-d\\TH:i:s\\Z') }}')"
+                 class="flex items-center gap-2 border-2 border-base-300 px-3 py-2 shrink-0"
+                 :class="{ 'border-error': minutes === '00' && parseInt(seconds) <= 30 }">
+                <span class="font-mono text-xl"
+                      :class="{ 'text-error font-bold': minutes === '00' && parseInt(seconds) <= 30 }">
+                    <span x-text="minutes">00</span>:<span x-text="seconds">00</span>
+                </span>
+                <span class="text-xs ia-text-gray">left</span>
+            </div>
+        </div>
+
+        {# Options — one tap to select, square cards, brand-blue highlight #}
+        {{ form_start(form) }}
+        <div class="flex flex-col gap-3" x-data="{ selected: null }">
+            {% for choice in form.choice %}
+                <label class="relative transition-opacity" x-data="{ id: {{ loop.index }} }"
+                       :class="{ 'opacity-60': selected !== null && selected !== id }">
+                    {{ form_widget(choice, {'attr': {'class': 'peer hidden', '@click': 'selected = id'}}) }}
+                    <div class="flex items-center gap-4 p-4 border-2 border-base-300 cursor-pointer transition-colors
+                                hover:border-primary peer-checked:border-primary peer-checked:bg-primary/10">
+                        <div class="w-6 h-6 rounded-full border-2 border-base-300 peer-checked:border-primary flex items-center justify-center shrink-0">
+                            <div class="w-3 h-3 rounded-full bg-primary opacity-0 peer-checked:opacity-100"></div>
+                        </div>
+                        <span class="text-lg font-medium">{{ choice.vars.label }}</span>
+                    </div>
+                </label>
+            {% endfor %}
+        </div>
+
+        <div class="mt-6">
+            <button type="submit" class="btn btn-neutral btn-lg w-full text-lg">Submit Vote</button>
+        </div>
+        {{ form_rest(form) }}
+        {{ form_end(form, {'render_rest': false}) }}
+
+        <p class="mt-4 text-center text-xs ia-text-gray">One vote per device · Innovate Alabama × Sloss Tech</p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('timer', (endDate) => ({
+        minutes: '00', seconds: '00', isExpired: false,
+        init() { this.updateTimer(); setInterval(() => this.updateTimer(), 1000); },
+        updateTimer() {
+            const diff = new Date(endDate) - new Date();
+            if (diff <= 0) { this.isExpired = true; this.minutes = '00'; this.seconds = '00'; return; }
+            const m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
+            this.minutes = String(m).padStart(2, '0');
+            this.seconds = String(s).padStart(2, '0');
+        }
+    }))
+})
+</script>
+{% endblock %}
