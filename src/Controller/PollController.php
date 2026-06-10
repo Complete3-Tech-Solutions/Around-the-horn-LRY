@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Poll;
 use App\Enum\FlashTypeEnum;
+use App\Event\EventConfig;
 use App\Form\VoteType;
 use App\Service\Poll\PollService;
 use App\Service\Security\VoteRateLimiter;
@@ -21,6 +22,7 @@ class PollController extends AbstractController
         private readonly VisitorService $visitorService,
         private readonly PollService $pollService,
         private readonly VoteRateLimiter $rateLimiter,
+        private readonly EventConfig $eventConfig,
     ) {
     }
 
@@ -56,9 +58,13 @@ class PollController extends AbstractController
             return $this->render('poll/error.html.twig', ['message' => 'This poll is no longer available.']);
         }
 
-        // Already voted from this device → thank-you screen.
-        if ($this->visitorService->checkIfVisitorHasVoted($voterId, $poll)) {
-            return $this->render('poll/success.html.twig', ['title' => $poll->getTitle()]);
+        // Already voted from this device → thank-you screen (with the pick).
+        if (null !== ($existing = $this->visitorService->findVisitorVote($voterId, $poll))) {
+            return $this->render('poll/success.html.twig', [
+                'title' => $poll->getTitle(),
+                'round' => $poll->getRoundNumber() ? $this->eventConfig->round($poll->getRoundNumber()) : null,
+                'picked' => $poll->getRoundNumber() ? $this->eventConfig->founderForChoice($existing->getChoice()) : null,
+            ]);
         }
 
         $vote = $this->visitorService->createVote($poll, $voterId);

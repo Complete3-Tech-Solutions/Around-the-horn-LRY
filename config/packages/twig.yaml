@@ -3,6 +3,9 @@ twig:
     globals:
         # Lets every template read the moderator-selected UI theme + screen.
         event_state: '@App\Service\Event\EventStateService'
+        # Founder roster + round definitions (single source of truth) for the
+        # audience pages — founder cards, round badges, charity stakes line.
+        event_config: '@App\Event\EventConfig'
 
 when@test:
     twig:

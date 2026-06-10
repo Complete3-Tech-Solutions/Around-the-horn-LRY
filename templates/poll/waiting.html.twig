@@ -3,19 +3,95 @@
 {% block title %}Stand By — Around the Horn{% endblock %}
 
 {% block body %}
-{% include 'components/_brand_header.html.twig' with {'heading': 'Around the Horn', 'subtitle': 'Audience voting'} %}
-<div class="min-h-screen bg-base-100 grid place-items-center px-4"
+{% set founders = event_config.founders %}
+{% set decided = decided_rounds|default([]) %}
+{% set total = total_rounds|default(event_config.rounds|length) %}
+{% set standings = standings|default([]) %}
+
+{# Self-polling shell — see poll/show.html.twig for why we swap #vote-app,
+   never "body". #}
+<div id="vote-app"
      hx-get="{{ path('app_vote_live') }}"
      hx-trigger="every 3s"
-     hx-select="body"
+     hx-select="#vote-app"
      hx-swap="outerHTML">
-    <div class="card bg-base-100 border-2 border-base-300 max-w-md w-full">
-        <div class="card-body items-center text-center">
-            <img src="/img/logo.svg" alt="Innovate Alabama" class="h-16 w-16 mb-2">
-            <h1 class="text-2xl font-display" style="font-weight:200;">Stand by</h1>
-            <p class="ia-text-gray">Voting for the next round opens soon.</p>
-            <p class="text-sm mt-2">Keep this page open — no need to scan again.</p>
-            <span class="loading loading-dots loading-md ia-text-cyan mt-4"></span>
+
+    {% include 'components/_brand_header.html.twig' with {
+        'compact': true,
+        'subtitle': 'Audience voting',
+        'badge': decided is not empty ? decided|length ~ ' of ' ~ total ~ ' scored' : null,
+    } %}
+
+    <div class="min-h-screen bg-base-100 px-3 py-9 grid place-items-center">
+        <div class="max-w-md w-full mx-auto flex flex-col gap-6">
+
+            {# Status: this page advances itself when the moderator opens a round #}
+            {% set pending = event_config.rounds|filter(r => r.number not in decided) %}
+            {% set next = pending|length > 0 ? pending|first : null %}
+            <div class="border-2 border-base-300 text-center px-4 py-6">
+                <img src="/img/logo.svg" alt="Innovate Alabama" class="h-12 w-12 mx-auto mb-3">
+                <h1 class="text-2xl font-display" style="font-weight:200;">{{ decided is empty ? "You're in — stand by" : 'Round ' ~ decided|last ~ ' is in the books' }}</h1>
+                <p class="ia-text-gray text-sm mt-1">Voting opens here the moment the next round goes live.</p>
+                {% if next %}
+                    <p class="mt-3 text-sm">
+                        <span class="block text-[10px] uppercase tracking-[0.14em] ia-text-gray">{{ decided is empty ? 'First up' : 'Up next' }}</span>
+                        <b>{{ next.key }}</b> — {{ next.label }}
+                    </p>
+                {% endif %}
+                <p class="text-[11px] ia-text-gray mt-3 flex items-center justify-center gap-2">
+                    <span class="loading loading-dots loading-xs ia-text-cyan"></span>
+                    Keep this page open — no need to scan again.
+                </p>
+            </div>
+
+            {% if decided is not empty and standings is not empty %}
+                {# Live scoreboard — phones double as a second screen between rounds #}
+                {% set topPoints = standings[0].points %}
+                <div class="border-2 border-base-300">
+                    <div class="border-b-2 border-base-300 px-4 py-3 flex items-center justify-between gap-3">
+                        <span class="font-display text-lg" style="font-weight:200;">Scoreboard</span>
+                        <span class="text-[11px] uppercase tracking-[0.14em] ia-text-gray">{{ decided|length }} of {{ total }} rounds scored</span>
+                    </div>
+                    {% for row in standings %}
+                        {% set leads = topPoints > 0 and row.points == topPoints %}
+                        <div class="flex items-center gap-3 px-4 py-3 {{ not loop.last ? 'border-b border-base-300' : '' }}">
+                            <img src="{{ row.founder.headshot }}" alt="{{ row.founder.name }}"
+                                 class="w-10 h-10 shrink-0 border-2 {{ leads ? 'border-secondary' : 'border-base-300' }} bg-base-200 object-cover">
+                            <div class="min-w-0 grow leading-tight">
+                                <div class="font-medium truncate">{{ row.founder.name }}</div>
+                                <div class="text-[10px] uppercase tracking-[0.14em] ia-text-gray truncate">{{ row.founder.sector }}</div>
+                            </div>
+                            {% if leads %}<span class="text-[10px] uppercase tracking-[0.14em] font-bold shrink-0" style="color: var(--ia-cyan);">Leads</span>{% endif %}
+                            <span class="font-mono text-2xl leading-none shrink-0 {{ leads ? 'font-bold' : '' }}">{{ row.points }}</span>
+                        </div>
+                    {% endfor %}
+                    <div class="border-t-2 border-base-300 px-4 py-3 flex items-center gap-1.5">
+                        {% for r in event_config.rounds %}
+                            <div class="grow text-center py-1.5 border-2 text-[10px] uppercase tracking-wider leading-none
+                                        {{ r.number in decided ? 'border-primary bg-primary text-primary-content' : 'border-base-300 ia-text-gray' }}">
+                                R{{ r.number }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                {# Pre-show: introduce the ballot before the first round opens #}
+                <div class="border-2 border-base-300">
+                    <div class="border-b-2 border-base-300 px-4 py-3">
+                        <span class="font-display text-lg" style="font-weight:200;">Tonight's founders</span>
+                    </div>
+                    {% for f in founders %}
+                        <div class="flex items-center gap-3 px-4 py-3 {{ not loop.last ? 'border-b border-base-300' : '' }}">
+                            <img src="{{ f.headshot }}" alt="{{ f.name }}" class="w-10 h-10 shrink-0 border-2 border-base-300 bg-base-200 object-cover">
+                            <div class="leading-tight">
+                                <div class="font-medium">{{ f.name }}</div>
+                                <div class="text-[10px] uppercase tracking-[0.14em] ia-text-gray">{{ f.sector }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <p class="text-center text-xs ia-text-gray leading-relaxed px-3">{{ event_config.tagline }}</p>
+            {% endif %}
         </div>
     </div>
 </div>

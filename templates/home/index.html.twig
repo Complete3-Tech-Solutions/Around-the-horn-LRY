@@ -6,14 +6,21 @@
 <div class="min-h-screen bg-base-100 grid place-items-center px-4">
     <div class="max-w-lg w-full text-center">
         <img src="/img/logo.svg" alt="Innovate Alabama" class="h-24 w-24 mx-auto mb-4">
-        <h1 class="text-4xl font-display mb-2" style="font-weight:200;">Around the Horn</h1>
-        <p class="ia-text-gray uppercase tracking-[0.2em] text-xs mb-6">Innovate Alabama · Sloss Tech</p>
-        <p class="mb-8 text-lg">Live audience voting for the founder debate. Scan the QR code shown on screen to vote in each round.</p>
-        <div class="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="{{ path('app_obs') }}" class="btn btn-neutral">Broadcast display (/obs)</a>
-            <a href="{{ path('app_admin_index') }}" class="btn btn-outline">Moderator (/admin)</a>
+        <h1 class="text-4xl font-display mb-2" style="font-weight:200;">{{ event_config.title }}</h1>
+        <p class="ia-text-gray uppercase tracking-[0.2em] text-xs">{{ event_config.subtitle }}</p>
+
+        <p class="mt-6 text-lg leading-relaxed">{{ event_config.tagline }}</p>
+
+        {# Audience first: one tap into the live vote flow #}
+        <a href="{{ path('app_vote_live') }}" class="btn btn-neutral btn-lg w-full sm:w-auto sm:px-12 mt-9">Join the live vote</a>
+        <p class="mt-3 text-xs ia-text-gray">The vote page follows the show — it opens automatically each round.</p>
+
+        {# Crew tools, deliberately quiet #}
+        <div class="mt-12 pt-6 border-t border-base-300 flex items-center justify-center gap-6 text-xs">
+            <a href="{{ path('app_obs') }}" class="link link-hover ia-text-gray">Broadcast display</a>
+            <a href="{{ path('app_admin_index') }}" class="link link-hover ia-text-gray">Moderator</a>
         </div>
-        <p class="mt-8 text-xs ia-text-gray">Private event tool · themed fork of OpenStreamPoll (MIT)</p>
+        <p class="mt-6 text-[10px] ia-text-gray">Private event tool · themed fork of OpenStreamPoll (MIT)</p>
     </div>
 </div>
 {% endblock %}

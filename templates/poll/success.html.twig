@@ -1,37 +1,85 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Vote Submitted — Around the Horn{% endblock %}
+{% block title %}Vote In — Around the Horn{% endblock %}
 
 {% block body %}
-{% include 'components/_brand_header.html.twig' with {'heading': 'Around the Horn', 'subtitle': 'Audience voting'} %}
-<div class="min-h-screen bg-base-100 grid place-items-center px-4 relative overflow-hidden"
+{% set round = round|default(null) %}
+{% set picked = picked|default(null) %}
+
+{# Self-polling shell — see poll/show.html.twig for why we swap #vote-app,
+   never "body". #}
+<div id="vote-app"
      {% if auto_refresh|default(false) %}
      hx-get="{{ path('app_vote_live') }}"
      hx-trigger="every 3s"
-     hx-select="body"
+     hx-select="#vote-app"
      hx-swap="outerHTML"
      {% endif %}>
-    <div class="fireworks-container absolute inset-0 pointer-events-none"></div>
-    <div class="card bg-base-100 border-2 border-base-300 max-w-md w-full relative z-10">
-        <div class="card-body items-center text-center">
-            <div class="ia-text-cyan mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+
+    {% include 'components/_brand_header.html.twig' with {
+        'compact': true,
+        'subtitle': 'Audience voting',
+        'badge': round ? round.key : null,
+    } %}
+
+    <div class="min-h-screen bg-base-100 grid place-items-center px-3 py-9 relative overflow-hidden">
+        <div class="fireworks-container absolute inset-0 pointer-events-none"></div>
+
+        {# Ballot receipt: the pick, the stakes, what happens next #}
+        <div class="max-w-md w-full relative z-10 border-2 border-base-300 bg-base-100">
+            <div class="border-b-2 border-base-300 px-4 py-3 flex items-center justify-between gap-3">
+                <span class="text-[11px] uppercase tracking-[0.18em] ia-text-gray truncate">{{ round ? round.key ~ ' · ' ~ round.label : 'Your vote' }}</span>
+                <span class="text-[11px] uppercase tracking-[0.18em] font-bold shrink-0" style="color: var(--ia-blue);">✓ Locked in</span>
             </div>
-            <h1 class="text-3xl font-display" style="font-weight:200;">Thank you!</h1>
-            <p class="ia-text-gray">Your vote for "{{ title }}" was recorded.</p>
-            <p class="text-sm mt-2">Watch the screen for the live result. Keep this page open for the next round — no need to scan again.</p>
+
+            <div class="px-4 py-6 text-center">
+                {% if picked %}
+                    <img src="{{ picked.headshot }}" alt="{{ picked.name }}"
+                         class="w-20 h-20 mx-auto border-2 border-base-300 bg-base-200 object-cover">
+                    <h1 class="text-3xl font-display mt-3" style="font-weight:200;">{{ picked.name }}</h1>
+                    <p class="text-[11px] uppercase tracking-[0.14em] ia-text-gray mt-1">{{ picked.sector }}</p>
+                    <p class="text-sm mt-4 leading-snug">A win for {{ picked.name }} sends the Innovate Alabama donation to <b>{{ picked.charity }}</b>.</p>
+                {% else %}
+                    <div class="ia-text-cyan">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h1 class="text-3xl font-display mt-3" style="font-weight:200;">Thank you!</h1>
+                    <p class="ia-text-gray text-sm mt-2">Your vote for "{{ title }}" was recorded.</p>
+                {% endif %}
+            </div>
+
+            <div class="border-t-2 border-base-300 px-4 py-3 text-center">
+                <p class="text-sm">Live results are on the big screen.</p>
+                {% if auto_refresh|default(false) %}
+                    <p class="text-[11px] ia-text-gray mt-1 flex items-center justify-center gap-2">
+                        <span class="loading loading-dots loading-xs ia-text-cyan"></span>
+                        Keep this page open — the next round starts here automatically.
+                    </p>
+                {% else %}
+                    <p class="text-[11px] ia-text-gray mt-1">Keep this page open for the next round — no need to scan again.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const c = document.querySelector('.fireworks-container');
-    if (c && window.Fireworks) {
-        new window.Fireworks(c, { autoresize: true, opacity: 0.5, particles: 50, intensity: 25, hue: { min: 200, max: 220 } }).start();
-    }
-});
-</script>
+    <script>
+    (function () {
+        // Runs on first load AND after an HTMX swap (DOMContentLoaded fired long ago).
+        const start = () => {
+            const c = document.querySelector('.fireworks-container');
+            if (c && window.Fireworks && !c.dataset.lit) {
+                c.dataset.lit = '1';
+                new window.Fireworks(c, { autoresize: true, opacity: 0.5, particles: 50, intensity: 25, hue: { min: 200, max: 220 } }).start();
+            }
+        };
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', start);
+        } else {
+            start();
+        }
+    })();
+    </script>
+</div>
 {% endblock %}

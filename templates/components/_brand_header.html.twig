@@ -1,12 +1,21 @@
-{# Innovate Alabama brand header — shared by admin and the audience voting page.
-   Optional include vars: heading, subtitle. The logo (kit asset) sits at the
-   left; a thin brand-blue rule underlines it. Spacing on the 3px grid. #}
+{# Innovate Alabama brand header — shared by admin and the audience pages.
+   Optional include vars:
+     heading, subtitle — text lockup
+     compact          — slimmer variant for the audience phone pages
+     badge            — small square status chip on the right (e.g. "Round 2 of 4")
+   The top bar carries identity + state only; the round question never lives
+   here (it heads the ballot content instead). Spacing on the 3px grid. #}
+{% set _compact = compact|default(false) %}
 <header class="w-full bg-base-100 border-b-2" style="border-color: var(--ia-blue);">
-    <div class="container mx-auto px-3 py-3 flex items-center gap-3">
-        <img src="/img/logo.svg" alt="Innovate Alabama" class="h-12 w-12 shrink-0" width="48" height="48">
-        <div class="leading-tight">
-            <div class="font-display text-lg" style="font-weight:200;">{{ heading|default('Around the Horn') }}</div>
-            <div class="text-[11px] uppercase tracking-[0.18em]" style="color: var(--ia-gray);">{{ subtitle|default('Innovate Alabama · Sloss Tech') }}</div>
+    <div class="container mx-auto px-3 {{ _compact ? 'py-1.5 max-w-xl' : 'py-3' }} flex items-center gap-3">
+        <img src="/img/logo.svg" alt="Innovate Alabama" class="{{ _compact ? 'h-9 w-9' : 'h-12 w-12' }} shrink-0"
+             width="{{ _compact ? 36 : 48 }}" height="{{ _compact ? 36 : 48 }}">
+        <div class="leading-tight min-w-0">
+            <div class="font-display {{ _compact ? 'text-base' : 'text-lg' }}" style="font-weight:200;">{{ heading|default('Around the Horn') }}</div>
+            <div class="{{ _compact ? 'text-[10px]' : 'text-[11px]' }} uppercase tracking-[0.18em] truncate" style="color: var(--ia-gray);">{{ subtitle|default('Innovate Alabama · Sloss Tech') }}</div>
         </div>
+        {% if badge|default(null) %}
+            <div class="ml-auto shrink-0 border-2 border-base-300 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.14em] leading-none">{{ badge }}</div>
+        {% endif %}
     </div>
 </header>

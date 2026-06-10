@@ -64,9 +64,22 @@ class VisitorService
 
     public function checkIfVisitorHasVoted(string $voterId, Poll $poll): bool
     {
-        return $poll->getVotes()->exists(function ($key, $vote) use ($voterId) {
-            return $vote->getVoterId() === $voterId;
-        });
+        return null !== $this->findVisitorVote($voterId, $poll);
+    }
+
+    /**
+     * The vote this device cast in the given poll, if any — used by the
+     * thank-you screen to show the voter their own pick (ballot receipt).
+     */
+    public function findVisitorVote(string $voterId, Poll $poll): ?Vote
+    {
+        foreach ($poll->getVotes() as $vote) {
+            if ($vote->getVoterId() === $voterId) {
+                return $vote;
+            }
+        }
+
+        return null;
     }
 
     public function getClientIdFromRequest(Request $request): string

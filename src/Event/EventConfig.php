@@ -25,6 +25,22 @@ final class EventConfig
     public const EVENT_SUBTITLE = 'Innovate Alabama · Sloss Tech';
     public const EVENT_TAGLINE = 'Three founders. Four rounds. You score it. The winner\'s charity gets the donation.';
 
+    /** Twig-friendly accessors (this class is exposed as the `event_config` global). */
+    public function title(): string
+    {
+        return self::EVENT_TITLE;
+    }
+
+    public function subtitle(): string
+    {
+        return self::EVENT_SUBTITLE;
+    }
+
+    public function tagline(): string
+    {
+        return self::EVENT_TAGLINE;
+    }
+
     /**
      * @return list<array{key:string,name:string,sector:string,initials:string,headshot:string,charity:string,color:string}>
      */

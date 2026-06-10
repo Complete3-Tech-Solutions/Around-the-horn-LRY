@@ -3,65 +3,130 @@
 {% block title %}{{ poll.title }} — Around the Horn{% endblock %}
 
 {% block body %}
-{% include 'components/_brand_header.html.twig' with {'heading': 'Around the Horn', 'subtitle': 'Cast your vote'} %}
+{% set round = poll.roundNumber ? event_config.round(poll.roundNumber) : null %}
+{% set founders = event_config.founders %}
 
-<div class="min-h-screen bg-base-100 py-6">
-    <div class="container mx-auto px-3 max-w-2xl">
-        {# Question + round timer #}
-        <div class="flex flex-col sm:flex-row items-center gap-3 justify-between mb-6">
-            <h1 class="text-3xl font-display text-center sm:text-left" style="font-weight:200;">{{ poll.title }}</h1>
-            <div x-data="timer('{{ poll.endAt|date('Y-m-d\\TH:i:s\\Z') }}')"
-                 class="flex items-center gap-2 border-2 border-base-300 px-3 py-2 shrink-0"
-                 :class="{ 'border-error': minutes === '00' && parseInt(seconds) <= 30 }">
-                <span class="font-mono text-xl"
-                      :class="{ 'text-error font-bold': minutes === '00' && parseInt(seconds) <= 30 }">
-                    <span x-text="minutes">00</span>:<span x-text="seconds">00</span>
-                </span>
-                <span class="text-xs ia-text-gray">left</span>
-            </div>
-        </div>
+{# #vote-app is the self-polling shell shared by the ballot/success/waiting
+   screens: each page swaps the whole shell (header included) for the next
+   state's shell. NEVER hx-select "body" — htmx drops the body wrapper when
+   parsing full-page responses, which blanks the phone. #}
+{# When the countdown hits zero the page gently re-polls /vote so the phone
+   moves itself to the results/standby state — the server stays authoritative. #}
+<div id="vote-app"
+     hx-get="{{ path('app_vote_live') }}"
+     hx-trigger="every 4s [window.iaRoundClosed === true]"
+     hx-select="#vote-app"
+     hx-swap="outerHTML">
 
-        {# Options — one tap to select, square cards, brand-blue highlight #}
-        {{ form_start(form) }}
-        <div class="flex flex-col gap-3" x-data="{ selected: null }">
-            {% for choice in form.choice %}
-                <label class="relative transition-opacity" x-data="{ id: {{ loop.index }} }"
-                       :class="{ 'opacity-60': selected !== null && selected !== id }">
-                    {{ form_widget(choice, {'attr': {'class': 'peer hidden', '@click': 'selected = id'}}) }}
-                    <div class="flex items-center gap-4 p-4 border-2 border-base-300 cursor-pointer transition-colors
-                                hover:border-primary peer-checked:border-primary peer-checked:bg-primary/10">
-                        <div class="w-6 h-6 rounded-full border-2 border-base-300 peer-checked:border-primary flex items-center justify-center shrink-0">
-                            <div class="w-3 h-3 rounded-full bg-primary opacity-0 peer-checked:opacity-100"></div>
-                        </div>
-                        <span class="text-lg font-medium">{{ choice.vars.label }}</span>
+    {# Slim top bar: identity + round position. The question heads the ballot below. #}
+    {% include 'components/_brand_header.html.twig' with {
+        'compact': true,
+        'subtitle': 'Cast your vote',
+        'badge': round ? 'Round ' ~ round.number ~ ' of ' ~ event_config.rounds|length : 'Live vote',
+    } %}
+
+    <div class="min-h-screen bg-base-100">
+        <div class="container mx-auto px-3 max-w-xl pt-6 pb-36"
+             x-data="window.iaBallot('{{ poll.endAt ? poll.endAt|date('Y-m-d\\TH:i:s\\Z') : '' }}')">
+
+            {# Context strip: which round + time left #}
+            <div class="flex items-center justify-between gap-3">
+                <div class="text-[11px] uppercase tracking-[0.18em] ia-text-gray">
+                    {{ round ? round.key ~ ' · ' ~ round.label : 'Audience vote' }}
+                </div>
+                {% if poll.endAt %}
+                    <div class="flex items-baseline gap-1.5 border-2 px-3 py-1.5 shrink-0 transition-colors"
+                         :class="(warn || expired) ? 'border-error' : 'border-base-300'">
+                        <span class="font-mono text-lg leading-none" :class="(warn || expired) ? 'text-error font-bold' : ''"
+                              x-text="expired ? 'CLOSED' : minutes + ':' + seconds">--:--</span>
+                        <span class="text-[10px] uppercase tracking-[0.14em] ia-text-gray" x-show="!expired">left</span>
                     </div>
-                </label>
-            {% endfor %}
-        </div>
+                {% endif %}
+            </div>
 
-        <div class="mt-6">
-            <button type="submit" class="btn btn-neutral btn-lg w-full text-lg">Submit Vote</button>
-        </div>
-        {{ form_rest(form) }}
-        {{ form_end(form, {'render_rest': false}) }}
+            {# The question being scored #}
+            <h1 class="text-2xl sm:text-3xl font-display leading-tight mt-3 mb-6" style="font-weight:200;">{{ poll.title }}</h1>
 
-        <p class="mt-4 text-center text-xs ia-text-gray">One vote per device · Innovate Alabama × Sloss Tech</p>
+            {# Ballot — one tap to choose, faces match the big screen #}
+            {{ form_start(form) }}
+            <div class="flex flex-col gap-3">
+                {% for choice in form.choice %}
+                    {% set founder = (round and founders[loop.index0] is defined) ? founders[loop.index0] : null %}
+                    <label class="relative block cursor-pointer select-none transition-opacity"
+                           :class="selected !== null && selected !== {{ choice.vars.value }} ? 'opacity-55' : ''">
+                        {{ form_widget(choice, {'attr': {'class': 'peer sr-only', '@change': 'selected = ' ~ choice.vars.value}}) }}
+                        <div class="flex items-center gap-3 p-3 border-2 border-base-300 transition-colors
+                                    hover:border-primary/60 peer-checked:border-primary peer-checked:bg-primary/10">
+                            {% if founder %}
+                                <img src="{{ founder.headshot }}" alt="{{ founder.name }}"
+                                     class="w-14 h-14 shrink-0 border-2 border-base-300 bg-base-200 object-cover">
+                            {% endif %}
+                            <div class="min-w-0 grow">
+                                <div class="text-lg font-medium leading-tight">{{ choice.vars.label }}</div>
+                                {% if founder %}
+                                    <div class="text-[11px] uppercase tracking-[0.14em] ia-text-gray mt-1">{{ founder.sector }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="w-7 h-7 shrink-0 border-2 border-base-300 grid place-items-center text-transparent
+                                        peer-checked:bg-primary peer-checked:border-primary peer-checked:text-primary-content">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </label>
+                {% endfor %}
+            </div>
+
+            {# Thumb-reach submit, always visible #}
+            <div class="fixed bottom-0 inset-x-0 z-20 border-t-2 border-base-300 bg-base-100/95 backdrop-blur-sm">
+                <div class="container mx-auto px-3 py-3 max-w-xl">
+                    <button type="submit" class="btn btn-neutral btn-lg w-full text-lg" :disabled="expired">
+                        <span x-show="!expired" x-text="selected === null ? 'Tap a founder to choose' : 'Lock in my vote'">Lock in my vote</span>
+                        <span x-show="expired" style="display:none;">Round closed — watch the screen</span>
+                    </button>
+                    <p class="mt-2 text-center text-[11px] ia-text-gray leading-snug">
+                        One vote per device · You're helping send the donation to the winning founder's charity
+                    </p>
+                </div>
+            </div>
+            {{ form_rest(form) }}
+            {{ form_end(form, {'render_rest': false}) }}
+        </div>
     </div>
-</div>
 
-<script>
-document.addEventListener('alpine:init', () => {
-    Alpine.data('timer', (endDate) => ({
-        minutes: '00', seconds: '00', isExpired: false,
-        init() { this.updateTimer(); setInterval(() => this.updateTimer(), 1000); },
-        updateTimer() {
-            const diff = new Date(endDate) - new Date();
-            if (diff <= 0) { this.isExpired = true; this.minutes = '00'; this.seconds = '00'; return; }
-            const m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
-            this.minutes = String(m).padStart(2, '0');
-            this.seconds = String(s).padStart(2, '0');
-        }
-    }))
-})
-</script>
+    <script>
+    // Inside #vote-app on purpose: HTMX re-runs this whenever it swaps the
+    // ballot in, so the component is registered on window (NOT via
+    // Alpine.data, which only registers during the initial alpine:init and
+    // is dead after a swap).
+    window.iaRoundClosed = false;
+    window.iaBallot = (endIso) => ({
+        selected: null,
+        expired: false,
+        warn: false,
+        minutes: '--',
+        seconds: '--',
+        init() {
+            const checked = this.$root.querySelector('input[type=radio]:checked');
+            if (checked) this.selected = parseInt(checked.value, 10);
+            if (!endIso) return;
+            this.tick();
+            this._t = setInterval(() => this.tick(), 1000);
+        },
+        tick() {
+            const diff = new Date(endIso) - new Date();
+            if (diff <= 0) {
+                this.expired = true;
+                window.iaRoundClosed = true; // page starts polling /vote for the next state
+                if (this._t) clearInterval(this._t);
+                return;
+            }
+            this.warn = diff <= 30000;
+            this.minutes = String(Math.floor(diff / 60000)).padStart(2, '0');
+            this.seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+        },
+    });
+    </script>
+</div>
 {% endblock %}
