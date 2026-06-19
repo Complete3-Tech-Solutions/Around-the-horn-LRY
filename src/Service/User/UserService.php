@@ -40,4 +40,15 @@ class UserService
 
         return $user;
     }
+
+    /**
+     * Set a new password for an existing user (hashing it). Used by the
+     * in-app moderator "change password" screen — the caller is already
+     * authenticated, so no current-password check is required here.
+     */
+    public function changePassword(User $user, string $newPassword): void
+    {
+        $user->setPassword($this->passwordEncoder->hashPassword($user, $newPassword));
+        $this->entityManager->flush();
+    }
 }

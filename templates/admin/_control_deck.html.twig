@@ -15,6 +15,7 @@
                     <a href="{{ path('app_obs') }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline">Open /obs ↗</a>
                     <a href="{{ path('app_obs_qr') }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline">Open /obs/qr ↗</a>
                     <a href="{{ path('app_admin_founders') }}" class="btn btn-sm btn-outline">Manage founders</a>
+                    <a href="{{ path('app_admin_account') }}" class="btn btn-sm btn-outline">Change password</a>
                     <form method="post" action="{{ path('app_admin_round_new') }}" class="inline">
                         <input type="hidden" name="_token" value="{{ csrf_token('round_new') }}">
                         <button class="btn btn-sm btn-outline">+ Add round</button>

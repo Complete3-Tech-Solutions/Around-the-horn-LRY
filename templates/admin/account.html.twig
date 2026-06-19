@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Change Password — Around the Horn{% endblock %}
+
+{% block body %}
+    {% include 'components/_brand_header.html.twig' with {'heading': 'Account', 'subtitle': 'Moderator control'} %}
+
+    <div class="min-h-screen">
+        <div class="container mx-auto px-2 py-4 max-w-md">
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body p-4">
+                    <h2 class="text-lg font-bold mb-1">Change password</h2>
+                    <p class="text-xs ia-text-gray mb-3">
+                        Signed in as <b>{{ username }}</b>. Set a new password below — you don't need the current one.
+                        It takes effect immediately and you stay signed in; use it next time you log in.
+                    </p>
+
+                    {{ form_start(form, {'attr': {'class': 'space-y-3'}}) }}
+                        <div class="form-control">
+                            {{ form_label(form.plainPassword.first, null, {'label_attr': {'class': 'label py-1 text-sm'}}) }}
+                            {{ form_widget(form.plainPassword.first, {'attr': {'class': 'input input-bordered input-sm w-full', 'autocomplete': 'new-password'}}) }}
+                            {{ form_errors(form.plainPassword.first) }}
+                        </div>
+                        <div class="form-control">
+                            {{ form_label(form.plainPassword.second, null, {'label_attr': {'class': 'label py-1 text-sm'}}) }}
+                            {{ form_widget(form.plainPassword.second, {'attr': {'class': 'input input-bordered input-sm w-full', 'autocomplete': 'new-password'}}) }}
+                            {{ form_errors(form.plainPassword.second) }}
+                        </div>
+
+                        <div class="flex justify-end gap-2 mt-2">
+                            <a href="{{ path('app_admin_index') }}" class="btn btn-ghost btn-sm">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-sm">Update password</button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
