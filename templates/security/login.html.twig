@@ -6,7 +6,7 @@
 <div class="min-h-screen bg-base-100 grid place-items-center px-4">
     <div class="w-full max-w-md">
         <div class="flex flex-col items-center mb-6">
-            <img src="/img/logo.svg" alt="Innovate Alabama" class="h-16 w-16 mb-3">
+            <img src="{{ event_state.theme == 'innovate-dark' ? '/img/logo.svg' : '/img/logo-ink.svg' }}" alt="Innovate Alabama" class="h-16 w-16 mb-3">
             <h1 class="text-2xl font-display" style="font-weight:200;">Around the Horn — Admin</h1>
             <p class="text-xs ia-text-gray uppercase tracking-[0.18em] mt-1">Innovate Alabama · Sloss Tech</p>
         </div>

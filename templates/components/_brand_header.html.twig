@@ -25,7 +25,8 @@
 {% else %}
     <header class="w-full bg-base-100 border-b-2" style="border-color: var(--ia-blue);">
         <div class="container mx-auto px-3 {{ _compact ? 'py-1.5 max-w-xl' : 'py-3' }} flex items-center gap-3">
-            <img src="/img/logo.svg" alt="Innovate Alabama" class="{{ _compact ? 'h-9 w-9' : 'h-12 w-12' }} shrink-0"
+            {# Light theme = light page bg → use the ink (navy) mark so it isn't invisible; dark theme keeps the white mark. #}
+            <img src="{{ event_state.theme == 'innovate-dark' ? '/img/logo.svg' : '/img/logo-ink.svg' }}" alt="Innovate Alabama" class="{{ _compact ? 'h-9 w-9' : 'h-12 w-12' }} shrink-0"
                  width="{{ _compact ? 36 : 48 }}" height="{{ _compact ? 36 : 48 }}">
             <div class="leading-tight min-w-0">
                 <div class="font-display {{ _compact ? 'text-base' : 'text-lg' }}" style="font-weight:200;">{{ heading|default('Around the Horn') }}</div>

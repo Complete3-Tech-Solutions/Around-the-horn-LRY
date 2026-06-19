@@ -31,7 +31,7 @@
             {% set pending = round_metas|filter(r => r.number not in decided) %}
             {% set next = pending|length > 0 ? pending|first : null %}
             <div class="border-2 border-base-300 text-center px-4 py-6">
-                <img src="/img/logo.svg" alt="Innovate Alabama" class="h-12 w-12 mx-auto mb-3">
+                <img src="{{ event_state.theme == 'innovate-dark' ? '/img/logo.svg' : '/img/logo-ink.svg' }}" alt="Innovate Alabama" class="h-12 w-12 mx-auto mb-3">
                 <h1 class="text-2xl font-display" style="font-weight:200;">{{ decided is empty ? "You're in — stand by" : 'Round ' ~ decided|last ~ ' is in the books' }}</h1>
                 <p class="ia-text-gray text-sm mt-1">Voting opens here the moment the next round goes live.</p>
                 {% if next %}

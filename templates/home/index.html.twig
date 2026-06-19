@@ -5,7 +5,7 @@
 {% block body %}
 <div class="min-h-screen bg-base-100 grid place-items-center px-4">
     <div class="max-w-lg w-full text-center">
-        <img src="/img/logo.svg" alt="Innovate Alabama" class="h-24 w-24 mx-auto mb-4">
+        <img src="{{ event_state.theme == 'innovate-dark' ? '/img/logo.svg' : '/img/logo-ink.svg' }}" alt="Innovate Alabama" class="h-24 w-24 mx-auto mb-4">
         <h1 class="text-4xl font-display mb-2" style="font-weight:200;">{{ event_config.title }}</h1>
         <p class="ia-text-gray uppercase tracking-[0.2em] text-xs">{{ event_config.subtitle }}</p>
 
