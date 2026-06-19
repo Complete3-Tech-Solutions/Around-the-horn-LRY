@@ -6,6 +6,7 @@ use App\Entity\Poll;
 use App\Enum\FlashTypeEnum;
 use App\Event\EventConfig;
 use App\Form\VoteType;
+use App\Service\Event\EventStateService;
 use App\Service\Poll\PollService;
 use App\Service\Scoreboard\ScoreboardService;
 use App\Service\Security\VoteRateLimiter;
@@ -29,6 +30,7 @@ class VoteController extends AbstractController
         private readonly VoteRateLimiter $rateLimiter,
         private readonly EventConfig $eventConfig,
         private readonly ScoreboardService $scoreboard,
+        private readonly EventStateService $eventState,
         private readonly CacheInterface $cache,
     ) {
     }
@@ -38,11 +40,18 @@ class VoteController extends AbstractController
     {
         [$voterId, $cookie] = $this->visitorService->resolveVoterId($request);
 
-        $poll = $this->pollService->getActivePoll();
-        if (null === $poll) {
-            $response = $this->renderWaiting();
+        // Mirror the moderator's "Reveal winner" on the phones (matches /obs):
+        // an explicit winner flag wins, so every open phone flips to the
+        // champion reveal. "Resume live" clears it and the phone re-polls back.
+        if ('winner' === $this->eventState->getScreen()) {
+            $response = $this->renderWinner();
         } else {
-            $response = $this->handle($request, $poll, $voterId, true);
+            $poll = $this->pollService->getActivePoll();
+            if (null === $poll) {
+                $response = $this->renderWaiting();
+            } else {
+                $response = $this->handle($request, $poll, $voterId, true);
+            }
         }
 
         if (null !== $cookie) {
@@ -99,13 +108,45 @@ class VoteController extends AbstractController
     }
 
     /**
-     * Between-rounds screen with the cross-round scoreboard. The standings are
-     * cached briefly because every idle phone re-polls /vote every few seconds —
-     * the tally must not run per request.
+     * Between-rounds screen with the cross-round scoreboard.
      */
     private function renderWaiting(): Response
     {
-        $board = $this->cache->get('phone_standings', function (ItemInterface $item): array {
+        $board = $this->board();
+
+        return $this->render('poll/waiting.html.twig', [
+            'standings' => $board['standings'],
+            'decided_rounds' => $board['decided_rounds'],
+            'total_rounds' => $this->scoreboard->totalRoundCount(),
+            'round_metas' => $this->scoreboard->roundMetas(),
+        ]);
+    }
+
+    /**
+     * Champion reveal on the phones — fired when the moderator reveals the
+     * winner on /obs, so the wall and every phone celebrate together.
+     */
+    private function renderWinner(): Response
+    {
+        $board = $this->board();
+
+        return $this->render('poll/winner.html.twig', [
+            'champion' => $board['champion'],
+            'standings' => $board['standings'],
+            'total_rounds' => $this->scoreboard->totalRoundCount(),
+        ]);
+    }
+
+    /**
+     * Cached scoreboard board (standings + decided rounds + champion). Cached
+     * briefly because every idle phone re-polls /vote every few seconds — the
+     * tally must not run per request (matters at ~150 phones).
+     *
+     * @return array{standings:list<array{founder:array,points:int,wins:list<int>}>,decided_rounds:list<int>,champion:?array{founder:array,points:int,tie:bool}}
+     */
+    private function board(): array
+    {
+        return $this->cache->get('phone_standings', function (ItemInterface $item): array {
             $item->expiresAfter(3);
 
             $standings = $this->scoreboard->standings();
@@ -117,14 +158,17 @@ class VoteController extends AbstractController
             $decidedRounds = array_values(array_unique($decidedRounds));
             sort($decidedRounds);
 
-            return ['standings' => $standings, 'decided_rounds' => $decidedRounds];
-        });
+            $champion = null;
+            if ([] !== $standings && $standings[0]['points'] > 0) {
+                $top = $standings[0];
+                $champion = [
+                    'founder' => $top['founder'],
+                    'points' => $top['points'],
+                    'tie' => isset($standings[1]) && $standings[1]['points'] === $top['points'],
+                ];
+            }
 
-        return $this->render('poll/waiting.html.twig', [
-            'standings' => $board['standings'],
-            'decided_rounds' => $board['decided_rounds'],
-            'total_rounds' => $this->scoreboard->totalRoundCount(),
-            'round_metas' => $this->scoreboard->roundMetas(),
-        ]);
+            return ['standings' => $standings, 'decided_rounds' => $decidedRounds, 'champion' => $champion];
+        });
     }
 }
