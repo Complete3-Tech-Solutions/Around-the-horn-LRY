@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Poll;
 use App\Enum\FlashTypeEnum;
 use App\Form\PollType;
-use App\Event\EventConfig;
 use App\Repository\PollRepository;
 use App\Service\Event\EventStateService;
 use App\Service\Poll\PollService;
@@ -23,7 +22,6 @@ class AdminController extends AbstractController
         private readonly PollService $pollService,
         private readonly ScoreboardService $scoreboard,
         private readonly EventStateService $eventState,
-        private readonly EventConfig $eventConfig,
     ) {
     }
 
@@ -33,22 +31,21 @@ class AdminController extends AbstractController
         $polls = $this->pollRepository->findLatest(10);
         $active = $this->scoreboard->activePoll();
 
-        $roundPolls = [];
-        foreach ($this->scoreboard->roundPolls() as $roundPoll) {
-            $roundPolls[$roundPoll->getRoundNumber()] = $roundPoll;
-        }
+        // The rounds are now DB-driven (moderator can add/edit/delete them),
+        // so enumerate the round polls directly rather than the config seed.
+        $roundPolls = $this->scoreboard->roundPolls();
 
         $controlRounds = [];
-        foreach ($this->eventConfig->rounds() as $round) {
-            $poll = $roundPolls[$round['number']] ?? null;
+        foreach ($roundPolls as $poll) {
+            $meta = $poll->getRoundMeta();
             $controlRounds[] = [
-                'number' => $round['number'],
-                'label' => $round['label'],
-                'title' => $round['title'],
+                'number' => $meta['number'],
+                'label' => $meta['label'],
+                'title' => $meta['title'],
                 'poll' => $poll,
-                'isActive' => null !== $poll && null !== $active && $poll->getId() === $active->getId(),
-                'isDecided' => null !== $poll && $this->scoreboard->isRoundDecided($poll, $active),
-                'votes' => null !== $poll ? $poll->getTotalVotes() : 0,
+                'isActive' => null !== $active && $poll->getId() === $active->getId(),
+                'isDecided' => $this->scoreboard->isRoundDecided($poll, $active),
+                'votes' => $poll->getTotalVotes(),
             ];
         }
 

@@ -62,7 +62,7 @@ class PollController extends AbstractController
         if (null !== ($existing = $this->visitorService->findVisitorVote($voterId, $poll))) {
             return $this->render('poll/success.html.twig', [
                 'title' => $poll->getTitle(),
-                'round' => $poll->getRoundNumber() ? $this->eventConfig->round($poll->getRoundNumber()) : null,
+                'round' => $poll->getRoundMeta(),
                 'picked' => $poll->getRoundNumber() ? $this->eventConfig->founderForChoice($existing->getChoice()) : null,
             ]);
         }
@@ -93,6 +93,7 @@ class PollController extends AbstractController
             'poll' => $poll,
             'voterId' => $voterId,
             'form' => $form,
+            'total_rounds' => $this->pollService->countRoundPolls(),
         ]);
     }
 }

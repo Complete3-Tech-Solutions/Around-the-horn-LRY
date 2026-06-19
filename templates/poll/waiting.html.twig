@@ -5,12 +5,13 @@
 {% block body %}
 {% set founders = event_config.founders %}
 {% set decided = decided_rounds|default([]) %}
-{% set total = total_rounds|default(event_config.rounds|length) %}
+{% set round_metas = round_metas|default([]) %}
+{% set total = total_rounds|default(round_metas|length) %}
 {% set standings = standings|default([]) %}
 
 {# Self-polling shell — see poll/show.html.twig for why we swap #vote-app,
    never "body". #}
-<div id="vote-app"
+<div id="vote-app" class="ia-stage"
      hx-get="{{ path('app_vote_live') }}"
      hx-trigger="every 3s"
      hx-select="#vote-app"
@@ -18,6 +19,7 @@
 
     {% include 'components/_brand_header.html.twig' with {
         'compact': true,
+        'stage': true,
         'subtitle': 'Audience voting',
         'badge': decided is not empty ? decided|length ~ ' of ' ~ total ~ ' scored' : null,
     } %}
@@ -26,7 +28,7 @@
         <div class="max-w-md w-full mx-auto flex flex-col gap-6">
 
             {# Status: this page advances itself when the moderator opens a round #}
-            {% set pending = event_config.rounds|filter(r => r.number not in decided) %}
+            {% set pending = round_metas|filter(r => r.number not in decided) %}
             {% set next = pending|length > 0 ? pending|first : null %}
             <div class="border-2 border-base-300 text-center px-4 py-6">
                 <img src="/img/logo.svg" alt="Innovate Alabama" class="h-12 w-12 mx-auto mb-3">
@@ -66,7 +68,7 @@
                         </div>
                     {% endfor %}
                     <div class="border-t-2 border-base-300 px-4 py-3 flex items-center gap-1.5">
-                        {% for r in event_config.rounds %}
+                        {% for r in round_metas %}
                             <div class="grow text-center py-1.5 border-2 text-[10px] uppercase tracking-wider leading-none
                                         {{ r.number in decided ? 'border-primary bg-primary text-primary-content' : 'border-base-300 ia-text-gray' }}">
                                 R{{ r.number }}

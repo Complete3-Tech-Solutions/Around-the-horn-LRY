@@ -81,3 +81,38 @@ h4,
 .ia-text-blue { color: var(--ia-blue); }
 .ia-text-cyan { color: var(--ia-cyan); }
 .ia-text-gray { color: var(--ia-gray); }
+
+/* =========================================================================
+   Audience "broadcast" skin (Sloss Tech LED-wall look) — purple #2B266D +
+   cyan #04B2E2 + Jost, matching the /obs mockups. SCOPED to .ia-stage so the
+   moderator /admin keeps the canonical blue daisyUI theme untouched. We remap
+   daisyUI's HSL theme vars (--p/--s) on the subtree so existing utility classes
+   (bg-primary, border-primary, peer-checked:*) recolor without a rebuild. */
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700;800;900&display=swap');
+
+.ia-stage {
+    --ia-blue: #2b266d;       /* purple — repoints var(--ia-blue) references */
+    --ia-cyan: #04b2e2;       /* bright cyan */
+    --ia-purple: #2b266d;
+    --p: 244 48% 29%;         /* daisyUI primary  → purple */
+    --pc: 0 0% 100%;
+    --s: 193 96% 45%;         /* daisyUI secondary → cyan */
+    --sc: 0 0% 100%;
+    font-family: "Jost", var(--ia-font-body);
+}
+/* Jost headlines, bold per the mockups (beats the global Stardust weight:200). */
+.ia-stage h1,
+.ia-stage h2,
+.ia-stage h3,
+.ia-stage .font-display {
+    font-family: "Jost", var(--ia-font-body) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.5px;
+}
+/* Broadcast purple header band for the audience phone pages. */
+.ia-header-band {
+    background: var(--ia-purple);
+    color: #fff;
+    border-bottom: 4px solid var(--ia-cyan);
+}
+.ia-header-band .ia-text-gray { color: rgba(255, 255, 255, 0.7) !important; }

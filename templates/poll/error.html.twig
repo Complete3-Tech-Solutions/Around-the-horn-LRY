@@ -3,14 +3,16 @@
 {% block title %}Voting Not Open — Around the Horn{% endblock %}
 
 {% block body %}
-{% include 'components/_brand_header.html.twig' with {'compact': true, 'subtitle': 'Audience voting'} %}
-<div class="min-h-screen bg-base-100 grid place-items-center px-3 py-9">
-    <div class="max-w-md w-full border-2 border-base-300 text-center px-4 py-6">
-        <img src="/img/logo.svg" alt="Innovate Alabama" class="h-12 w-12 mx-auto mb-3">
-        <h1 class="text-2xl font-display" style="font-weight:200;">Voting isn't open right now</h1>
-        <p class="ia-text-gray text-sm mt-1">{{ message }}</p>
-        <a href="{{ path('app_vote_live') }}" class="btn btn-neutral w-full mt-6">Go to the live vote page</a>
-        <p class="text-[11px] ia-text-gray mt-3">It always shows the current round — keep it open during the show.</p>
+<div class="ia-stage">
+    {% include 'components/_brand_header.html.twig' with {'compact': true, 'stage': true, 'subtitle': 'Audience voting'} %}
+    <div class="min-h-screen bg-base-100 grid place-items-center px-3 py-9">
+        <div class="max-w-md w-full border-2 border-base-300 text-center px-4 py-6">
+            <img src="/img/logo.svg" alt="Innovate Alabama" class="h-12 w-12 mx-auto mb-3">
+            <h1 class="text-2xl font-display" style="font-weight:200;">Voting isn't open right now</h1>
+            <p class="ia-text-gray text-sm mt-1">{{ message }}</p>
+            <a href="{{ path('app_vote_live') }}" class="btn btn-neutral w-full mt-6">Go to the live vote page</a>
+            <p class="text-[11px] ia-text-gray mt-3">It always shows the current round — keep it open during the show.</p>
+        </div>
     </div>
 </div>
 {% endblock %}

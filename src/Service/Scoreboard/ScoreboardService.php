@@ -31,11 +31,29 @@ class ScoreboardService
     }
 
     /**
-     * @return list<Poll> the round polls, ordered 1..4
+     * @return list<Poll> the round polls, ordered by round number
      */
     public function roundPolls(): array
     {
         return $this->pollRepository->findRoundPolls();
+    }
+
+    /**
+     * Live round metadata (from the DB), ordered by round number — used by the
+     * /obs ribbon and the audience standby page to enumerate the rounds.
+     *
+     * @return list<array{number:int,key:string,label:string,title:string,question:string,myths:list<string>}>
+     */
+    public function roundMetas(): array
+    {
+        $metas = [];
+        foreach ($this->roundPolls() as $poll) {
+            if (null !== ($meta = $poll->getRoundMeta())) {
+                $metas[] = $meta;
+            }
+        }
+
+        return $metas;
     }
 
     public function activePoll(): ?Poll
@@ -150,7 +168,7 @@ class ScoreboardService
 
     public function totalRoundCount(): int
     {
-        return \count($this->eventConfig->rounds());
+        return \count($this->roundPolls());
     }
 
     /**
@@ -222,10 +240,10 @@ class ScoreboardService
     public function currentRound(): ?array
     {
         $active = $this->activePoll();
-        if (null === $active || null === $active->getRoundNumber()) {
+        if (null === $active) {
             return null;
         }
 
-        return $this->eventConfig->round($active->getRoundNumber());
+        return $active->getRoundMeta();
     }
 }

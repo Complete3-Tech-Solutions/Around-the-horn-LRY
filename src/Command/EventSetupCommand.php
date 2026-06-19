@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Entity\Poll;
 use App\Event\EventConfig;
 use App\Repository\PollRepository;
+use App\Service\Founder\FounderService;
 use App\Service\User\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -16,11 +17,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * One-shot event setup: seeds the four "Around the Horn" round polls (each with
- * the three founders as fixed options, tagged with their round number, left as
- * drafts for the moderator to activate) and optionally creates an admin user.
+ * One-shot event setup: seeds the "Around the Horn" round polls (each with the
+ * three founders as fixed options, tagged with their round number + metadata,
+ * left as drafts for the moderator to activate) and optionally creates an admin
+ * user. Rounds are editable afterwards from /admin.
  *
- * Idempotent: existing rounds are skipped unless --reset is passed.
+ * Idempotent: existing rounds are skipped unless --reset is passed. Re-running
+ * after adding a round to EventConfig seeds only the missing ones (e.g. Round 5).
  *
  *   php bin/console app:event:setup                       # seed rounds only
  *   php bin/console app:event:setup moderator 'S3cret!'   # seed + admin user
@@ -36,6 +39,7 @@ class EventSetupCommand extends Command
         private readonly EntityManagerInterface $entityManager,
         private readonly PollRepository $pollRepository,
         private readonly EventConfig $eventConfig,
+        private readonly FounderService $founderService,
         private readonly UserService $userService,
     ) {
         parent::__construct();
@@ -68,6 +72,13 @@ class EventSetupCommand extends Command
             $io->warning('Existing round polls removed (--reset).');
         }
 
+        // Seed the editable founder roster first so the round ballots copy the
+        // real names (no-op once founders exist; edit them later at /admin).
+        $seededFounders = $this->founderService->seedDefaults();
+        if ($seededFounders > 0) {
+            $io->writeln(sprintf(' • Seeded %d founder(s) — editable at /admin.', $seededFounders));
+        }
+
         $founders = $this->eventConfig->founders();
         $utc = new \DateTimeZone('UTC');
         $created = 0;
@@ -83,6 +94,9 @@ class EventSetupCommand extends Command
                 ->setTitle($round['title'])
                 ->setShortCode('round'.$round['number'])
                 ->setRoundNumber($round['number'])
+                ->setRoundLabel($round['label'])
+                ->setRoundQuestion($round['question'])
+                ->setMyths($round['myths'])
                 ->setStartAt(new \DateTimeImmutable('now', $utc))
                 ->setEndAt(new \DateTimeImmutable('+60 minutes', $utc))
                 ->setDraft(true);
@@ -99,7 +113,9 @@ class EventSetupCommand extends Command
         }
 
         $this->entityManager->flush();
-        $io->success(sprintf('%d round(s) created. The 4 rounds are drafts — activate them from /admin.', $created));
+        // Keep every round's ballot in lockstep with the roster (count + names).
+        $this->founderService->syncRoundBallots();
+        $io->success(sprintf('%d round(s) created. Rounds are drafts — activate, edit, add or reset them from /admin.', $created));
 
         $username = $input->getArgument('admin-username');
         $password = $input->getArgument('admin-password');

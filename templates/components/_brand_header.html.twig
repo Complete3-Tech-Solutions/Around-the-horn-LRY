@@ -6,16 +6,34 @@
    The top bar carries identity + state only; the round question never lives
    here (it heads the ballot content instead). Spacing on the 3px grid. #}
 {% set _compact = compact|default(false) %}
-<header class="w-full bg-base-100 border-b-2" style="border-color: var(--ia-blue);">
-    <div class="container mx-auto px-3 {{ _compact ? 'py-1.5 max-w-xl' : 'py-3' }} flex items-center gap-3">
-        <img src="/img/logo.svg" alt="Innovate Alabama" class="{{ _compact ? 'h-9 w-9' : 'h-12 w-12' }} shrink-0"
-             width="{{ _compact ? 36 : 48 }}" height="{{ _compact ? 36 : 48 }}">
-        <div class="leading-tight min-w-0">
-            <div class="font-display {{ _compact ? 'text-base' : 'text-lg' }}" style="font-weight:200;">{{ heading|default('Around the Horn') }}</div>
-            <div class="{{ _compact ? 'text-[10px]' : 'text-[11px]' }} uppercase tracking-[0.18em] truncate" style="color: var(--ia-gray);">{{ subtitle|default('Innovate Alabama · Sloss Tech') }}</div>
+{% set _stage = stage|default(false) %}
+{% if _stage %}
+    {# Broadcast purple band — matches the /obs LED-wall look (audience pages). #}
+    <header class="w-full ia-header-band">
+        <div class="container mx-auto px-3 {{ _compact ? 'py-2 max-w-xl' : 'py-3' }} flex items-center gap-3">
+            <img src="/img/logo.svg" alt="Innovate Alabama" class="{{ _compact ? 'h-9 w-9' : 'h-12 w-12' }} shrink-0"
+                 width="{{ _compact ? 36 : 48 }}" height="{{ _compact ? 36 : 48 }}">
+            <div class="leading-tight min-w-0">
+                <div class="{{ _compact ? 'text-base' : 'text-lg' }} font-bold uppercase tracking-wide">{{ heading|default('Around the Horn') }}</div>
+                <div class="{{ _compact ? 'text-[10px]' : 'text-[11px]' }} uppercase tracking-[0.22em] truncate" style="color: var(--ia-cyan);">{{ subtitle|default('Innovate Alabama · Sloss Tech') }}</div>
+            </div>
+            {% if badge|default(null) %}
+                <div class="ml-auto shrink-0 border-2 border-white/40 rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] leading-none font-semibold">{{ badge }}</div>
+            {% endif %}
         </div>
-        {% if badge|default(null) %}
-            <div class="ml-auto shrink-0 border-2 border-base-300 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.14em] leading-none">{{ badge }}</div>
-        {% endif %}
-    </div>
-</header>
+    </header>
+{% else %}
+    <header class="w-full bg-base-100 border-b-2" style="border-color: var(--ia-blue);">
+        <div class="container mx-auto px-3 {{ _compact ? 'py-1.5 max-w-xl' : 'py-3' }} flex items-center gap-3">
+            <img src="/img/logo.svg" alt="Innovate Alabama" class="{{ _compact ? 'h-9 w-9' : 'h-12 w-12' }} shrink-0"
+                 width="{{ _compact ? 36 : 48 }}" height="{{ _compact ? 36 : 48 }}">
+            <div class="leading-tight min-w-0">
+                <div class="font-display {{ _compact ? 'text-base' : 'text-lg' }}" style="font-weight:200;">{{ heading|default('Around the Horn') }}</div>
+                <div class="{{ _compact ? 'text-[10px]' : 'text-[11px]' }} uppercase tracking-[0.18em] truncate" style="color: var(--ia-gray);">{{ subtitle|default('Innovate Alabama · Sloss Tech') }}</div>
+            </div>
+            {% if badge|default(null) %}
+                <div class="ml-auto shrink-0 border-2 border-base-300 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.14em] leading-none">{{ badge }}</div>
+            {% endif %}
+        </div>
+    </header>
+{% endif %}

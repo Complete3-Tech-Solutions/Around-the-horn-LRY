@@ -4,8 +4,6 @@ Live audience-voting app for an **"Around the Horn"–style founder debate**: th
 voted rounds, a running cross-round scoreboard, and a winner/closing screen — shown on the LED wall
 via **OBS browser sources** and voted on from phones via **QR code**.
 
-A themed, hardened **fork of [OpenStreamPoll](https://github.com/yoanbernabeu/OpenStreamPoll)** (MIT).
-
 ![status](https://img.shields.io/badge/status-event--ready-0043e8) ![license](https://img.shields.io/badge/license-MIT-black)
 
 ## Quick start

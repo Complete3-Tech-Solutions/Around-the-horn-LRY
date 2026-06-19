@@ -1,7 +1,7 @@
 {
     "type": "project",
     "name": "complete3tech/innovate-alabama-poll",
-    "description": "Around the Horn founder-debate live poll for Innovate Alabama (themed fork of OpenStreamPoll, MIT).",
+    "description": "Around the Horn founder-debate live poll for Innovate Alabama.",
     "license": "MIT",
     "minimum-stability": "stable",
     "prefer-stable": true,

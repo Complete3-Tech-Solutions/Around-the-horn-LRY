@@ -3,8 +3,9 @@
 {% block title %}{{ poll.title }} — Around the Horn{% endblock %}
 
 {% block body %}
-{% set round = poll.roundNumber ? event_config.round(poll.roundNumber) : null %}
+{% set round = poll.roundMeta %}
 {% set founders = event_config.founders %}
+{% set total_rounds = total_rounds|default(0) %}
 
 {# #vote-app is the self-polling shell shared by the ballot/success/waiting
    screens: each page swaps the whole shell (header included) for the next
@@ -12,7 +13,7 @@
    parsing full-page responses, which blanks the phone. #}
 {# When the countdown hits zero the page gently re-polls /vote so the phone
    moves itself to the results/standby state — the server stays authoritative. #}
-<div id="vote-app"
+<div id="vote-app" class="ia-stage"
      hx-get="{{ path('app_vote_live') }}"
      hx-trigger="every 4s [window.iaRoundClosed === true]"
      hx-select="#vote-app"
@@ -21,8 +22,9 @@
     {# Slim top bar: identity + round position. The question heads the ballot below. #}
     {% include 'components/_brand_header.html.twig' with {
         'compact': true,
+        'stage': true,
         'subtitle': 'Cast your vote',
-        'badge': round ? 'Round ' ~ round.number ~ ' of ' ~ event_config.rounds|length : 'Live vote',
+        'badge': round ? 'Round ' ~ round.number ~ ' of ' ~ total_rounds : 'Live vote',
     } %}
 
     <div class="min-h-screen bg-base-100">
@@ -55,8 +57,11 @@
                     <label class="relative block cursor-pointer select-none transition-opacity"
                            :class="selected !== null && selected !== {{ choice.vars.value }} ? 'opacity-55' : ''">
                         {{ form_widget(choice, {'attr': {'class': 'peer sr-only', '@change': 'selected = ' ~ choice.vars.value}}) }}
-                        <div class="flex items-center gap-3 p-3 border-2 border-base-300 transition-colors
-                                    hover:border-primary/60 peer-checked:border-primary peer-checked:bg-primary/10">
+                        {# Selected state is Alpine-driven: the tick box is a descendant of
+                           this row, so Tailwind's peer-checked (sibling combinator) can't
+                           reach it — bind on `selected` instead so the checkmark reliably shows. #}
+                        <div class="flex items-center gap-3 p-3 border-2 transition-colors"
+                             :class="selected === {{ choice.vars.value }} ? 'border-primary bg-primary/10' : 'border-base-300 hover:border-primary/60'">
                             {% if founder %}
                                 <img src="{{ founder.headshot }}" alt="{{ founder.name }}"
                                      class="w-14 h-14 shrink-0 border-2 border-base-300 bg-base-200 object-cover">
@@ -67,8 +72,8 @@
                                     <div class="text-[11px] uppercase tracking-[0.14em] ia-text-gray mt-1">{{ founder.sector }}</div>
                                 {% endif %}
                             </div>
-                            <div class="w-7 h-7 shrink-0 border-2 border-base-300 grid place-items-center text-transparent
-                                        peer-checked:bg-primary peer-checked:border-primary peer-checked:text-primary-content">
+                            <div class="w-7 h-7 shrink-0 border-2 grid place-items-center transition-colors"
+                                 :class="selected === {{ choice.vars.value }} ? 'bg-primary border-primary text-primary-content' : 'border-base-300 text-transparent'">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                                 </svg>

@@ -31,6 +31,14 @@ class PollService
         return $poll->getVotes()->count() > 0;
     }
 
+    /**
+     * Number of round-tagged polls (the live "Around the Horn" rounds).
+     */
+    public function countRoundPolls(): int
+    {
+        return \count($this->pollRepository->findRoundPolls());
+    }
+
     public function checkIfPollIsExpired(Poll $poll): bool
     {
         return $poll->getEndAt() < new \DateTimeImmutable('now', new \DateTimeZone('UTC'));

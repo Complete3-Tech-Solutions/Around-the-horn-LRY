@@ -4,13 +4,17 @@ namespace App\Controller;
 
 use App\Entity\Poll;
 use App\Enum\FlashTypeEnum;
+use App\Event\EventConfig;
+use App\Form\RoundType;
 use App\Repository\PollRepository;
+use App\Repository\VoteRepository;
 use App\Service\Event\EventStateService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\CacheInterface;
 
 /**
  * Moderator-facing round control for the live event. All routes sit under
@@ -28,8 +32,11 @@ class RoundController extends AbstractController
 
     public function __construct(
         private readonly PollRepository $pollRepository,
+        private readonly VoteRepository $voteRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly EventStateService $eventState,
+        private readonly EventConfig $eventConfig,
+        private readonly CacheInterface $cache,
     ) {
     }
 
@@ -80,6 +87,105 @@ class RoundController extends AbstractController
         $this->addFlash(FlashTypeEnum::SUCCESS->value, sprintf('"%s" closed and scored.', $poll->getTitle()));
 
         return $this->redirectToRoute('app_admin_index');
+    }
+
+    /**
+     * Reset the event for a fresh run: wipe every round's votes, draft all
+     * rounds, and put the OBS display back on the intro screen. The rounds
+     * themselves (and their edited copy) are kept.
+     */
+    #[Route('/event/reset', name: 'event_reset', methods: ['POST'])]
+    public function reset(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('event_reset', (string) $request->request->get('_token'))) {
+            $this->addFlash(FlashTypeEnum::ERROR->value, 'Invalid CSRF token.');
+
+            return $this->redirectToRoute('app_admin_index');
+        }
+
+        $deleted = $this->voteRepository->deleteForRoundPolls();
+
+        foreach ($this->pollRepository->findRoundPolls() as $poll) {
+            $poll->setDraft(true);
+        }
+        $this->entityManager->flush();
+
+        // Back to pre-show: intro screen, and drop the cached phone scoreboard.
+        $this->eventState->setScreen('intro');
+        $this->cache->delete('phone_standings');
+
+        $this->addFlash(FlashTypeEnum::SUCCESS->value, sprintf('New game ready — %d vote(s) cleared and all rounds reset to draft.', $deleted));
+
+        return $this->redirectToRoute('app_admin_index');
+    }
+
+    /**
+     * Add a new round: next free round number, founders pre-filled as the
+     * ballot, sensible placeholder copy, left as a draft — then jump to edit.
+     */
+    #[Route('/round/new', name: 'round_new', methods: ['POST'])]
+    public function newRound(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('round_new', (string) $request->request->get('_token'))) {
+            $this->addFlash(FlashTypeEnum::ERROR->value, 'Invalid CSRF token.');
+
+            return $this->redirectToRoute('app_admin_index');
+        }
+
+        $next = 1;
+        foreach ($this->pollRepository->findRoundPolls() as $existing) {
+            $next = max($next, (int) $existing->getRoundNumber() + 1);
+        }
+
+        $utc = new \DateTimeZone('UTC');
+        $round = new Poll();
+        $round
+            ->setTitle('Round '.$next.' — set the debate prompt')
+            ->setShortCode('round'.$next)
+            ->setRoundNumber($next)
+            ->setRoundLabel('Round '.$next)
+            ->setRoundQuestion('Who made the strongest case this round?')
+            ->setMyths([])
+            ->setStartAt(new \DateTimeImmutable('now', $utc))
+            ->setEndAt(new \DateTimeImmutable('+60 minutes', $utc))
+            ->setDraft(true);
+
+        // Founders in fixed ballot order => poll choices 1..N.
+        foreach ($this->eventConfig->founders() as $i => $founder) {
+            $setter = 'setQuestion'.($i + 1);
+            $round->{$setter}($founder['name']);
+        }
+
+        $this->entityManager->persist($round);
+        $this->entityManager->flush();
+
+        $this->addFlash(FlashTypeEnum::SUCCESS->value, sprintf('Round %d added — edit its prompt and question.', $next));
+
+        return $this->redirectToRoute('app_admin_round_edit', ['id' => $round->getId()]);
+    }
+
+    /**
+     * Edit a round's display copy (debate prompt, label, audience question,
+     * myths). Founder/ballot options are managed centrally and not editable
+     * here. CSRF is the form's stateless `submit` token (Origin/Referer).
+     */
+    #[Route('/round/{id}/edit', name: 'round_edit', methods: ['GET', 'POST'])]
+    public function editRound(Request $request, Poll $poll): Response
+    {
+        $form = $this->createForm(RoundType::class, $poll);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->flush();
+            $this->addFlash(FlashTypeEnum::SUCCESS->value, sprintf('Round %s updated.', $poll->getRoundNumber()));
+
+            return $this->redirectToRoute('app_admin_index');
+        }
+
+        return $this->render('admin/round_edit.html.twig', [
+            'poll' => $poll,
+            'form' => $form,
+        ]);
     }
 
     #[Route('/event/screen/{screen}', name: 'event_screen', methods: ['POST'], requirements: ['screen' => 'auto|winner|intro'])]

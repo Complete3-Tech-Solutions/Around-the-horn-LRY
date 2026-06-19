@@ -1,7 +1,6 @@
 # Around the Horn — Innovate Alabama × Sloss Tech
 
-A themed, hardened fork of [OpenStreamPoll](https://github.com/yoanbernabeu/OpenStreamPoll)
-for the live "Around the Horn"–style founder debate. One moderator, three votable
+Live audience-voting app for the "Around the Horn"–style founder debate. One moderator, three votable
 founders, four audience-voted rounds, a running scoreboard, and a winner/closing
 screen — all driven from a single admin control deck and surfaced to the LED wall
 through URL-addressable OBS browser sources.

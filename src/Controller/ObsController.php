@@ -76,7 +76,7 @@ class ObsController extends AbstractController
         }
 
         $qr = null;
-        if (null !== $active) {
+        if (null !== $active || \in_array($screen, ['intro', 'live'], true)) {
             $url = $this->generateUrl('app_vote_live', [], UrlGeneratorInterface::ABSOLUTE_URL);
             $qr = $this->qrService->generateQrCode($url);
         }
@@ -86,8 +86,8 @@ class ObsController extends AbstractController
         $lastDecided = $this->scoreboard->lastDecidedPoll();
         $nextRound = null;
         foreach ($roundStates as $rs) {
-            if ('pending' === $rs['state']) {
-                $nextRound = $this->eventConfig->round($rs['number']);
+            if ('pending' === $rs['state'] && null !== $rs['poll']) {
+                $nextRound = $rs['poll']->getRoundMeta();
                 break;
             }
         }
@@ -95,13 +95,9 @@ class ObsController extends AbstractController
         return $this->render('obs/_results.html.twig', [
             'screen' => $screen,
             'activePoll' => $active,
-            'round' => null !== $active && null !== $active->getRoundNumber()
-                ? $this->eventConfig->round($active->getRoundNumber())
-                : null,
+            'round' => null !== $active ? $active->getRoundMeta() : null,
             'roundStates' => $roundStates,
-            'lastRound' => null !== $lastDecided && null !== $lastDecided->getRoundNumber()
-                ? $this->eventConfig->round($lastDecided->getRoundNumber())
-                : null,
+            'lastRound' => null !== $lastDecided ? $lastDecided->getRoundMeta() : null,
             'lastWinners' => null !== $lastDecided ? $this->scoreboard->roundWinners($lastDecided) : [],
             'nextRound' => $nextRound,
             'liveResults' => null !== $active ? $this->scoreboard->liveResults($active) : [],
@@ -154,25 +150,26 @@ class ObsController extends AbstractController
     }
 
     /**
-     * @return list<array{number:int,label:string,state:string}>
+     * Live round progress from the DB round polls (so rounds added from /admin
+     * appear in the ribbon and "up next").
+     *
+     * @return list<array{number:int,label:string,state:string,poll:\App\Entity\Poll}>
      */
     private function buildRoundStates(?\App\Entity\Poll $active): array
     {
-        $roundPolls = [];
-        foreach ($this->scoreboard->roundPolls() as $poll) {
-            $roundPolls[$poll->getRoundNumber()] = $poll;
-        }
-
         $states = [];
-        foreach ($this->eventConfig->rounds() as $round) {
-            $poll = $roundPolls[$round['number']] ?? null;
+        foreach ($this->scoreboard->roundPolls() as $poll) {
+            $meta = $poll->getRoundMeta();
+            if (null === $meta) {
+                continue;
+            }
             $state = 'pending';
-            if (null !== $active && null !== $poll && $active->getId() === $poll->getId()) {
+            if (null !== $active && $active->getId() === $poll->getId()) {
                 $state = 'active';
-            } elseif (null !== $poll && $this->scoreboard->isRoundDecided($poll, $active)) {
+            } elseif ($this->scoreboard->isRoundDecided($poll, $active)) {
                 $state = 'done';
             }
-            $states[] = ['number' => $round['number'], 'label' => $round['label'], 'state' => $state];
+            $states[] = ['number' => $meta['number'], 'label' => $meta['label'], 'state' => $state, 'poll' => $poll];
         }
 
         return $states;

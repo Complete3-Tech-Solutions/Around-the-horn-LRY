@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Event;
 
+use App\Entity\Founder;
+use App\Repository\FounderRepository;
+
 /**
  * Single source of truth for the "Around the Horn" event: the founder roster
  * and the round definitions. Drives the seed command, the /obs display, the
@@ -23,7 +26,12 @@ final class EventConfig
 {
     public const EVENT_TITLE = 'Around the Horn';
     public const EVENT_SUBTITLE = 'Innovate Alabama · Sloss Tech';
-    public const EVENT_TAGLINE = 'Three founders. Four rounds. You score it. The winner\'s charity gets the donation.';
+    public const EVENT_TAGLINE = 'Three founders. Five rounds. You score it. The winner\'s charity gets the donation.';
+
+    public function __construct(
+        private readonly FounderRepository $founderRepository,
+    ) {
+    }
 
     /** Twig-friendly accessors (this class is exposed as the `event_config` global). */
     public function title(): string
@@ -42,9 +50,39 @@ final class EventConfig
     }
 
     /**
+     * The votable founder roster, in ballot order. Reads the editable roster
+     * from the DB (managed at /admin); falls back to the seed defaults until
+     * the moderator has saved any founders.
+     *
      * @return list<array{key:string,name:string,sector:string,initials:string,headshot:string,charity:string,color:string}>
      */
     public function founders(): array
+    {
+        $rows = $this->founderRepository->findOrdered();
+        if ([] === $rows) {
+            return $this->defaultFounders();
+        }
+
+        return array_map(static fn (Founder $f): array => [
+            'key' => 'f'.$f->getPosition(),
+            'name' => (string) $f->getName(),
+            'sector' => (string) $f->getCompany(),
+            'initials' => $f->getInitials(),
+            'headshot' => $f->hasHeadshot()
+                ? '/founders/'.$f->getId().'/photo?v='.$f->getVersion()
+                : '/img/founders/f'.$f->getPosition().'.svg',
+            'charity' => (string) $f->getCharity(),
+            'color' => $f->getColor(),
+        ], $rows);
+    }
+
+    /**
+     * Seed defaults for the founder roster (used when the DB has none yet, and
+     * by app:event:setup to seed the editable Founder rows).
+     *
+     * @return list<array{key:string,name:string,sector:string,initials:string,headshot:string,charity:string,color:string}>
+     */
+    public function defaultFounders(): array
     {
         return [
             [
@@ -78,7 +116,12 @@ final class EventConfig
     }
 
     /**
-     * The four sequential voting rounds. round number === Poll.roundNumber.
+     * Default seed for the sequential voting rounds (round number === Poll.roundNumber).
+     *
+     * NOTE: rounds are now DB-driven — the moderator can add/edit/delete them
+     * live from /admin, and the round metadata lives on the Poll entity. This
+     * array is only the initial seed used by app:event:setup (and to populate a
+     * new round's starting text). The live app reads Poll::getRoundMeta().
      *
      * @return list<array{number:int,key:string,label:string,title:string,question:string,myths:list<string>}>
      */
@@ -120,6 +163,14 @@ final class EventConfig
                 'label' => 'The hardest part',
                 'title' => 'The hardest part about being a founder',
                 'question' => 'Who told the most powerful story of the hardest part?',
+                'myths' => [],
+            ],
+            [
+                'number' => 5,
+                'key' => 'Round 5',
+                'label' => "What's disrupted next?",
+                'title' => 'Which legacy industry gets disrupted next?',
+                'question' => 'Whose prediction won the room?',
                 'myths' => [],
             ],
         ];

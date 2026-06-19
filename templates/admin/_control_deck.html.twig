@@ -11,9 +11,15 @@
         <div class="card-body p-4">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <h2 class="text-xl font-display" style="font-weight:200;">Run of Show — Moderator Control</h2>
-                <div class="flex gap-2">
+                <div class="flex gap-2 flex-wrap">
                     <a href="{{ path('app_obs') }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline">Open /obs ↗</a>
                     <a href="{{ path('app_obs_qr') }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline">Open /obs/qr ↗</a>
+                    <a href="{{ path('app_admin_founders') }}" class="btn btn-sm btn-outline">Manage founders</a>
+                    <form method="post" action="{{ path('app_admin_round_new') }}" class="inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('round_new') }}">
+                        <button class="btn btn-sm btn-outline">+ Add round</button>
+                    </form>
+                    <button type="button" class="btn btn-sm btn-error btn-outline" onclick="event_reset_modal.showModal()">Reset / new game</button>
                 </div>
             </div>
 
@@ -39,7 +45,7 @@
                                 {% if r.poll %}<span class="badge badge-outline badge-sm">{{ r.votes }} votes</span>{% endif %}
                             </div>
                         </div>
-                        <div class="shrink-0">
+                        <div class="shrink-0 flex flex-col items-stretch gap-1">
                             {% if r.poll %}
                                 {% if r.isActive %}
                                     <form method="post" action="{{ path('app_admin_round_close', {'id': r.poll.id}) }}">
@@ -52,6 +58,10 @@
                                         <button class="btn btn-sm btn-primary w-28">Go LIVE</button>
                                     </form>
                                 {% endif %}
+                                <div class="flex gap-1">
+                                    <a href="{{ path('app_admin_round_edit', {'id': r.poll.id}) }}" class="btn btn-xs btn-ghost flex-1">Edit</a>
+                                    <button type="button" class="btn btn-xs btn-ghost text-error flex-1" onclick="round_delete_{{ r.poll.id }}.showModal()">Delete</button>
+                                </div>
                             {% endif %}
                         </div>
                     </div>
@@ -97,3 +107,39 @@
         </div>
     </div>
 </div>
+
+{# Reset / new-game confirmation #}
+<dialog id="event_reset_modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Reset for a new game?</h3>
+        <p class="py-4 text-sm">This clears <b>all votes</b> from every round, sets every round back to Draft, and returns the OBS display to the intro screen. The rounds and their wording are kept. This cannot be undone.</p>
+        <div class="modal-action">
+            <form method="dialog"><button class="btn btn-ghost">Cancel</button></form>
+            <form method="post" action="{{ path('app_admin_event_reset') }}" class="inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('event_reset') }}">
+                <button class="btn btn-error">Reset &amp; start new game</button>
+            </form>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+{# Per-round delete confirmation #}
+{% for r in controlRounds %}
+    {% if r.poll %}
+        <dialog id="round_delete_{{ r.poll.id }}" class="modal">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg">Delete Round {{ r.number }}?</h3>
+                <p class="py-4 text-sm">This permanently removes the round "{{ r.label }}"{% if r.votes > 0 %} and its {{ r.votes }} vote(s){% endif %}. This cannot be undone.</p>
+                <div class="modal-action">
+                    <form method="dialog"><button class="btn btn-ghost">Cancel</button></form>
+                    <form method="post" action="{{ path('app_admin_delete', {'id': r.poll.id}) }}" class="inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ r.poll.id) }}">
+                        <button class="btn btn-error">Delete round</button>
+                    </form>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop"><button>close</button></form>
+        </dialog>
+    {% endif %}
+{% endfor %}

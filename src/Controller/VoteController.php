@@ -66,7 +66,7 @@ class VoteController extends AbstractController
             return $this->render('poll/success.html.twig', [
                 'title' => $poll->getTitle(),
                 'auto_refresh' => $liveEntry,
-                'round' => $poll->getRoundNumber() ? $this->eventConfig->round($poll->getRoundNumber()) : null,
+                'round' => $poll->getRoundMeta(),
                 'picked' => $poll->getRoundNumber() ? $this->eventConfig->founderForChoice($existing->getChoice()) : null,
             ]);
         }
@@ -94,6 +94,7 @@ class VoteController extends AbstractController
             'poll' => $poll,
             'voterId' => $voterId,
             'form' => $form,
+            'total_rounds' => $this->scoreboard->totalRoundCount(),
         ]);
     }
 
@@ -123,6 +124,7 @@ class VoteController extends AbstractController
             'standings' => $board['standings'],
             'decided_rounds' => $board['decided_rounds'],
             'total_rounds' => $this->scoreboard->totalRoundCount(),
+            'round_metas' => $this->scoreboard->roundMetas(),
         ]);
     }
 }

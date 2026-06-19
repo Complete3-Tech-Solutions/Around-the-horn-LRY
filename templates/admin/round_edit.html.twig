@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Round {{ poll.roundNumber }} — Around the Horn{% endblock %}
+
+{% block body %}
+    {% include 'components/_brand_header.html.twig' with {'heading': 'Edit Round ' ~ poll.roundNumber, 'subtitle': 'Moderator control'} %}
+
+    <div class="min-h-screen">
+        <div class="container mx-auto px-2 py-4 max-w-2xl">
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body p-4">
+                    <h2 class="text-lg font-bold mb-1">Round {{ poll.roundNumber }}</h2>
+                    <p class="text-xs ia-text-gray mb-3">
+                        Founder/ballot options are shared across all rounds and aren't edited here.
+                        {% if poll.totalVotes > 0 %}This round already has {{ poll.totalVotes }} vote(s) — copy changes are safe.{% endif %}
+                    </p>
+
+                    {{ form_start(form, {'attr': {'class': 'space-y-3'}}) }}
+                        <div class="form-control">
+                            {{ form_label(form.roundLabel, null, {'label_attr': {'class': 'label py-1 text-sm'}}) }}
+                            {{ form_widget(form.roundLabel, {'attr': {'class': 'input input-bordered input-sm w-full', 'placeholder': 'e.g. Why this industry?'}}) }}
+                            {{ form_errors(form.roundLabel) }}
+                        </div>
+
+                        <div class="form-control">
+                            {{ form_label(form.title, null, {'label_attr': {'class': 'label py-1 text-sm'}}) }}
+                            {{ form_widget(form.title, {'attr': {'class': 'textarea textarea-bordered textarea-sm w-full', 'rows': '2', 'placeholder': 'The headline shown on the big screen'}}) }}
+                            {{ form_errors(form.title) }}
+                        </div>
+
+                        <div class="form-control">
+                            {{ form_label(form.roundQuestion, null, {'label_attr': {'class': 'label py-1 text-sm'}}) }}
+                            {{ form_widget(form.roundQuestion, {'attr': {'class': 'input input-bordered input-sm w-full', 'placeholder': 'e.g. Who made the strongest case?'}}) }}
+                            {{ form_errors(form.roundQuestion) }}
+                        </div>
+
+                        <div class="form-control">
+                            {{ form_label(form.myths, null, {'label_attr': {'class': 'label py-1 text-sm'}}) }}
+                            {{ form_widget(form.myths, {'attr': {'class': 'textarea textarea-bordered textarea-sm w-full font-mono', 'placeholder': 'One myth per line (leave blank for none)'}}) }}
+                            {{ form_errors(form.myths) }}
+                        </div>
+
+                        <div class="flex justify-end gap-2 mt-2">
+                            <a href="{{ path('app_admin_index') }}" class="btn btn-ghost btn-sm">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-sm">Save round</button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

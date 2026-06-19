@@ -53,12 +53,30 @@ class Poll
     private ?bool $isDraft = null;
 
     /**
-     * 1-4 for the four "Around the Horn" rounds; null for ad-hoc polls.
-     * Links a poll to its EventConfig round (label, myths) and lets the
-     * scoreboard tally a founder across all rounds.
+     * 1..N for the "Around the Horn" rounds; null for ad-hoc polls.
+     * Tags a poll as a round and lets the scoreboard tally a founder across
+     * all rounds. Ordering/identity of the round.
      */
     #[ORM\Column(nullable: true)]
     private ?int $roundNumber = null;
+
+    /**
+     * Round metadata, moved out of EventConfig so the moderator can add/edit
+     * rounds live from /admin. Null on ad-hoc (non-round) polls.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $roundLabel = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $roundQuestion = null;
+
+    /**
+     * The "mythbusters" lines for the round (Round 3 in the default seed).
+     *
+     * @var list<string>|null
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $myths = null;
 
     public function __construct()
     {
@@ -242,6 +260,72 @@ class Poll
         $this->roundNumber = $roundNumber;
 
         return $this;
+    }
+
+    public function getRoundLabel(): ?string
+    {
+        return $this->roundLabel;
+    }
+
+    public function setRoundLabel(?string $roundLabel): static
+    {
+        $this->roundLabel = $roundLabel;
+
+        return $this;
+    }
+
+    public function getRoundQuestion(): ?string
+    {
+        return $this->roundQuestion;
+    }
+
+    public function setRoundQuestion(?string $roundQuestion): static
+    {
+        $this->roundQuestion = $roundQuestion;
+
+        return $this;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getMyths(): array
+    {
+        return $this->myths ?? [];
+    }
+
+    /**
+     * @param list<string>|null $myths
+     */
+    public function setMyths(?array $myths): static
+    {
+        $this->myths = ([] === $myths) ? null : $myths;
+
+        return $this;
+    }
+
+    /**
+     * Round metadata in the shape the /obs + /poll templates consume. Mirrors
+     * the array EventConfig::round() used to return, but sourced from this
+     * poll's own columns so the moderator can edit it live. Falls back to the
+     * debate title for the label and a generic prompt for the question.
+     *
+     * @return array{number:int,key:string,label:string,title:string,question:string,myths:list<string>}|null
+     */
+    public function getRoundMeta(): ?array
+    {
+        if (null === $this->roundNumber) {
+            return null;
+        }
+
+        return [
+            'number' => $this->roundNumber,
+            'key' => 'Round '.$this->roundNumber,
+            'label' => $this->roundLabel ?: ($this->title ?? ''),
+            'title' => $this->title ?? '',
+            'question' => $this->roundQuestion ?: 'Who made the strongest case this round?',
+            'myths' => $this->getMyths(),
+        ];
     }
 
     /**

@@ -16,6 +16,22 @@ class VoteRepository extends ServiceEntityRepository
         parent::__construct($registry, Vote::class);
     }
 
+    /**
+     * Delete every vote attached to a round-tagged poll. Used by the moderator
+     * "reset / new game" action to clear the board while keeping the rounds.
+     *
+     * @return int the number of votes deleted
+     */
+    public function deleteForRoundPolls(): int
+    {
+        return (int) $this->getEntityManager()
+            ->createQuery(
+                'DELETE FROM App\Entity\Vote v WHERE IDENTITY(v.poll) IN ('
+                .'SELECT p.id FROM App\Entity\Poll p WHERE p.roundNumber IS NOT NULL)'
+            )
+            ->execute();
+    }
+
     //    /**
     //     * @return Vote[] Returns an array of Vote objects
     //     */

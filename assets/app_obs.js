@@ -4,9 +4,30 @@ import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
 
+function fitObsStage() {
+    const stage = document.getElementById('obs-stage');
+    if (!stage) {
+        return;
+    }
+    const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+}
+
+function layoutObsMeters() {
+    document.querySelectorAll('.obs-meter').forEach((meter) => {
+        const fill = meter.querySelector('.obs-fill');
+        const stat = meter.querySelector('.obs-stat');
+        if (!fill || !stat) {
+            return;
+        }
+        const pct = parseFloat(fill.style.width) || 0;
+        const short = pct < 22;
+        meter.classList.toggle('short', short);
+        stat.classList.toggle('outside', short);
+    });
+}
+
 document.addEventListener('alpine:init', () => {
-    // Round countdown. Re-created on each 2s HTMX swap, so it cleans up its own
-    // interval on teardown to avoid leaking timers over a long event.
     Alpine.data('timer', (endDate) => ({
         display: '--:--',
         isWarn: false,
@@ -40,6 +61,20 @@ document.addEventListener('alpine:init', () => {
             this.isExpired = false;
         },
     }));
+});
+
+window.addEventListener('resize', fitObsStage);
+document.addEventListener('DOMContentLoaded', () => {
+    fitObsStage();
+    layoutObsMeters();
+});
+document.body.addEventListener('htmx:afterSwap', (event) => {
+    if (event.detail.target.id !== 'obs-stage-inner') {
+        return;
+    }
+    layoutObsMeters();
+    const stage = document.getElementById('obs-stage');
+    stage?.classList.toggle('obs-intro', event.detail.target.querySelector('.intro-body') !== null);
 });
 
 Alpine.start();
