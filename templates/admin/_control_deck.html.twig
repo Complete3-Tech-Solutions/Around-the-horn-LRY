@@ -39,7 +39,8 @@
                             <div class="font-semibold truncate">{{ r.label }}</div>
                             <div class="text-xs ia-text-gray truncate">{{ r.title }}</div>
                             <div class="mt-1 flex gap-1 flex-wrap">
-                                {% if r.isActive %}<span class="badge badge-success badge-sm">LIVE</span>
+                                {% if r.isVotingOpen %}<span class="badge badge-success badge-sm">VOTING</span>
+                                {% elseif r.isActive %}<span class="badge badge-info badge-sm">ON STAGE</span>
                                 {% elseif r.isDecided %}<span class="badge badge-neutral badge-sm">Closed</span>
                                 {% elseif r.poll %}<span class="badge badge-ghost badge-sm">Ready</span>
                                 {% else %}<span class="badge badge-warning badge-sm">Not seeded</span>{% endif %}
@@ -49,10 +50,21 @@
                         <div class="shrink-0 flex flex-col items-stretch gap-1">
                             {% if r.poll %}
                                 {% if r.isActive %}
-                                    <form method="post" action="{{ path('app_admin_round_close', {'id': r.poll.id}) }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
-                                        <button class="btn btn-sm btn-neutral w-28">Close round</button>
-                                    </form>
+                                    {% if r.isVotingOpen %}
+                                        <form method="post" action="{{ path('app_admin_round_close', {'id': r.poll.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                            <button class="btn btn-sm btn-neutral w-28">Close round</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="post" action="{{ path('app_admin_round_open_vote', {'id': r.poll.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                            <button class="btn btn-sm btn-primary w-28">Open vote</button>
+                                        </form>
+                                        <form method="post" action="{{ path('app_admin_round_close', {'id': r.poll.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                            <button class="btn btn-sm btn-ghost w-28">Cancel</button>
+                                        </form>
+                                    {% endif %}
                                 {% else %}
                                     <form method="post" action="{{ path('app_admin_round_activate', {'id': r.poll.id}) }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">

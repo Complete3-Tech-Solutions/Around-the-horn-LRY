@@ -7,23 +7,46 @@ namespace App\Service\Poll;
 use App\Entity\Poll;
 use App\Repository\PollRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 
 class PollService
 {
+    public const VOTE_WINDOW_SECONDS = 30;
+
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly PollRepository $pollRepository,
+        private readonly CacheInterface $cache,
     ) {
     }
 
+    /**
+     * The round currently on stage (moderator went live). Auto-closes once the
+     * 30-second voting window ends.
+     */
+    public function getStagePoll(): ?Poll
+    {
+        $poll = $this->pollRepository->findOneOnStage();
+        if (null === $poll) {
+            return null;
+        }
+
+        if ($this->autoCloseIfVotingEnded($poll)) {
+            return null;
+        }
+
+        return $poll;
+    }
+
+    /** @deprecated use getStagePoll() or Poll::isVotingOpen() */
     public function getActivePoll(): ?Poll
     {
-        return $this->pollRepository->findOneActive();
+        return $this->getStagePoll();
     }
 
     public function checkIfPollIsActive(): bool
     {
-        return null !== $this->pollRepository->findOneActive();
+        return null !== $this->getStagePoll();
     }
 
     public function checkIfPollHasVotes(Poll $poll): bool
@@ -41,6 +64,10 @@ class PollService
 
     public function checkIfPollIsExpired(Poll $poll): bool
     {
+        if (!$poll->hasVotingStarted()) {
+            return false;
+        }
+
         return $poll->getEndAt() < new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
     }
 
@@ -65,8 +92,8 @@ class PollService
      */
     public function persistPoll(Poll $poll): Poll
     {
-        $activePoll = $this->getActivePoll();
-        if ($activePoll && $activePoll->getId() !== $poll->getId()) {
+        $stagePoll = $this->pollRepository->findOneOnStage();
+        if ($stagePoll && $stagePoll->getId() !== $poll->getId()) {
             $poll->setDraft(true);
         }
 
@@ -80,6 +107,27 @@ class PollService
     {
         $this->entityManager->remove($poll);
         $this->entityManager->flush();
+    }
+
+    /**
+     * After the voting window passes, draft the round so the scoreboard can score it.
+     */
+    public function autoCloseIfVotingEnded(Poll $poll): bool
+    {
+        if (!$poll->isOnStage() || !$poll->hasVotingStarted()) {
+            return false;
+        }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        if ($poll->getEndAt() >= $now) {
+            return false;
+        }
+
+        $poll->setDraft(true);
+        $this->entityManager->flush();
+        $this->cache->delete('phone_standings');
+
+        return true;
     }
 
     private function generateShortCode(): string

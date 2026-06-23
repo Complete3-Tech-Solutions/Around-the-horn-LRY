@@ -54,7 +54,16 @@ class PollController extends AbstractController
             return $this->render('poll/error.html.twig', ['message' => 'This poll is not available.']);
         }
 
+        if (!$poll->isVotingOpen()) {
+            return $this->render('poll/preview.html.twig', [
+                'poll' => $poll,
+                'total_rounds' => $this->pollService->countRoundPolls(),
+            ]);
+        }
+
         if ($this->pollService->checkIfPollIsExpired($poll)) {
+            $this->pollService->autoCloseIfVotingEnded($poll);
+
             return $this->render('poll/error.html.twig', ['message' => 'This poll is no longer available.']);
         }
 

@@ -29,7 +29,7 @@ class AdminController extends AbstractController
     public function index(): Response
     {
         $polls = $this->pollRepository->findLatest(10);
-        $active = $this->scoreboard->activePoll();
+        $stage = $this->pollService->getStagePoll();
 
         // The rounds are now DB-driven (moderator can add/edit/delete them),
         // so enumerate the round polls directly rather than the config seed.
@@ -38,13 +38,15 @@ class AdminController extends AbstractController
         $controlRounds = [];
         foreach ($roundPolls as $poll) {
             $meta = $poll->getRoundMeta();
+            $onStage = null !== $stage && $poll->getId() === $stage->getId();
             $controlRounds[] = [
                 'number' => $meta['number'],
                 'label' => $meta['label'],
                 'title' => $meta['title'],
                 'poll' => $poll,
-                'isActive' => null !== $active && $poll->getId() === $active->getId(),
-                'isDecided' => $this->scoreboard->isRoundDecided($poll, $active),
+                'isActive' => $onStage,
+                'isVotingOpen' => $onStage && $stage->isVotingOpen(),
+                'isDecided' => $this->scoreboard->isRoundDecided($poll, $stage),
                 'votes' => $poll->getTotalVotes(),
             ];
         }
@@ -52,7 +54,7 @@ class AdminController extends AbstractController
         return $this->render('admin/index.html.twig', [
             'polls' => $polls,
             'controlRounds' => $controlRounds,
-            'activePoll' => $active,
+            'activePoll' => $stage,
             'standings' => $this->scoreboard->standings(),
             'eventScreen' => $this->eventState->getScreen(),
             'seeded' => \count($roundPolls) > 0,

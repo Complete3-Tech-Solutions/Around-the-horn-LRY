@@ -8,6 +8,7 @@ use App\Event\EventConfig;
 use App\Form\RoundType;
 use App\Repository\PollRepository;
 use App\Repository\VoteRepository;
+use App\Service\Poll\PollService;
 use App\Service\Event\EventStateService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -28,8 +29,6 @@ use Symfony\Contracts\Cache\CacheInterface;
 #[Route('/admin', name: 'app_admin_')]
 class RoundController extends AbstractController
 {
-    private const LIVE_WINDOW_MINUTES = 60;
-
     public function __construct(
         private readonly PollRepository $pollRepository,
         private readonly VoteRepository $voteRepository,
@@ -37,6 +36,7 @@ class RoundController extends AbstractController
         private readonly EventStateService $eventState,
         private readonly EventConfig $eventConfig,
         private readonly CacheInterface $cache,
+        private readonly PollService $pollService,
     ) {
     }
 
@@ -57,16 +57,47 @@ class RoundController extends AbstractController
         }
 
         $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        // On stage, but voting stays closed until the moderator opens it.
+        $closed = $now->modify('+10 years');
         $poll
-            ->setStartAt($now)
-            ->setEndAt($now->modify('+'.self::LIVE_WINDOW_MINUTES.' minutes'))
+            ->setStartAt($closed)
+            ->setEndAt($closed)
             ->setDraft(false);
 
         // Going live always resumes the auto screen (in case the winner was up).
         $this->eventState->setScreen('auto');
         $this->entityManager->flush();
 
-        $this->addFlash(FlashTypeEnum::SUCCESS->value, sprintf('"%s" is now LIVE.', $poll->getTitle()));
+        $this->addFlash(FlashTypeEnum::SUCCESS->value, sprintf('"%s" is on stage — open voting when ready.', $poll->getTitle()));
+
+        return $this->redirectToRoute('app_admin_index');
+    }
+
+    #[Route('/round/{id}/open-vote', name: 'round_open_vote', methods: ['POST'])]
+    public function openVote(Request $request, Poll $poll): Response
+    {
+        if (!$this->isCsrfTokenValid('round'.$poll->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash(FlashTypeEnum::ERROR->value, 'Invalid CSRF token.');
+
+            return $this->redirectToRoute('app_admin_index');
+        }
+
+        $stage = $this->pollRepository->findOneOnStage();
+        if (null === $stage || $stage->getId() !== $poll->getId()) {
+            $this->addFlash(FlashTypeEnum::ERROR->value, 'Go live on this round before opening voting.');
+
+            return $this->redirectToRoute('app_admin_index');
+        }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        $poll
+            ->setStartAt($now)
+            ->setEndAt($now->modify('+'.PollService::VOTE_WINDOW_SECONDS.' seconds'));
+
+        $this->entityManager->flush();
+        $this->cache->delete('phone_standings');
+
+        $this->addFlash(FlashTypeEnum::SUCCESS->value, sprintf('Voting open for %d seconds.', PollService::VOTE_WINDOW_SECONDS));
 
         return $this->redirectToRoute('app_admin_index');
     }
@@ -83,6 +114,7 @@ class RoundController extends AbstractController
         // Drafting removes it from "active"; the scoreboard then scores the round.
         $poll->setDraft(true);
         $this->entityManager->flush();
+        $this->cache->delete('phone_standings');
 
         $this->addFlash(FlashTypeEnum::SUCCESS->value, sprintf('"%s" closed and scored.', $poll->getTitle()));
 

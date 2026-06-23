@@ -149,6 +149,36 @@ class Poll
         return $this;
     }
 
+    /** Round is on the LED wall / phones (moderator went live) but voting may not be open yet. */
+    public function isOnStage(): bool
+    {
+        return false === $this->isDraft;
+    }
+
+    /** Audience can submit votes right now (30-second window after Open vote). */
+    public function isVotingOpen(): bool
+    {
+        if (!$this->isOnStage()) {
+            return false;
+        }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+
+        return $this->startAt <= $now && $this->endAt >= $now;
+    }
+
+    /** Voting was opened at least once for this on-stage round (window may have ended). */
+    public function hasVotingStarted(): bool
+    {
+        if (!$this->isOnStage()) {
+            return false;
+        }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+
+        return $this->startAt <= $now;
+    }
+
     /**
      * @return Collection<int, Vote>
      */

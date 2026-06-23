@@ -46,9 +46,11 @@ class VoteController extends AbstractController
         if ('winner' === $this->eventState->getScreen()) {
             $response = $this->renderWinner();
         } else {
-            $poll = $this->pollService->getActivePoll();
+            $poll = $this->pollService->getStagePoll();
             if (null === $poll) {
                 $response = $this->renderWaiting();
+            } elseif (!$poll->isVotingOpen()) {
+                $response = $this->renderPreview($poll);
             } else {
                 $response = $this->handle($request, $poll, $voterId, true);
             }
@@ -63,11 +65,13 @@ class VoteController extends AbstractController
 
     private function handle(Request $request, Poll $poll, string $voterId, bool $liveEntry): Response
     {
-        if ($poll->isDraft()) {
+        if ($poll->isDraft() || !$poll->isVotingOpen()) {
             return $this->renderWaiting();
         }
 
         if ($this->pollService->checkIfPollIsExpired($poll)) {
+            $this->pollService->autoCloseIfVotingEnded($poll);
+
             return $this->renderWaiting();
         }
 
@@ -103,6 +107,14 @@ class VoteController extends AbstractController
             'poll' => $poll,
             'voterId' => $voterId,
             'form' => $form,
+            'total_rounds' => $this->scoreboard->totalRoundCount(),
+        ]);
+    }
+
+    private function renderPreview(Poll $poll): Response
+    {
+        return $this->render('poll/preview.html.twig', [
+            'poll' => $poll,
             'total_rounds' => $this->scoreboard->totalRoundCount(),
         ]);
     }

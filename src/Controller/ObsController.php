@@ -98,7 +98,8 @@ class ObsController extends AbstractController
             'lastWinners' => null !== $lastDecided ? $this->scoreboard->roundWinners($lastDecided) : [],
             'lastRoundResults' => null !== $lastDecided ? $this->scoreboard->liveResults($lastDecided) : [],
             'nextRound' => $nextRound,
-            'liveResults' => null !== $active ? $this->scoreboard->liveResults($active) : [],
+            'liveResults' => null !== $active && $active->isVotingOpen() ? $this->scoreboard->liveResults($active) : [],
+            'votingOpen' => null !== $active && $active->isVotingOpen(),
             'standings' => $this->scoreboard->standings(),
             'champion' => $this->scoreboard->champion(),
             'decided' => $decided,
@@ -122,7 +123,7 @@ class ObsController extends AbstractController
     #[Route('/obs/qr/results', name: 'app_obs_qr_results')]
     public function qrResults(): Response
     {
-        $poll = $this->pollService->getActivePoll();
+        $poll = $this->pollService->getStagePoll();
 
         if (null === $poll) {
             return new Response('');

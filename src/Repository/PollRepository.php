@@ -31,11 +31,24 @@ class PollRepository extends ServiceEntityRepository
 
     public function findOneActive(): ?Poll
     {
+        $stage = $this->findOneOnStage();
+        if (null === $stage) {
+            return null;
+        }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        if ($stage->getStartAt() <= $now && $stage->getEndAt() >= $now) {
+            return $stage;
+        }
+
+        return null;
+    }
+
+    /** The single non-draft round on stage (voting open or not). */
+    public function findOneOnStage(): ?Poll
+    {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.startAt <= :now')
-            ->andWhere('p.endAt >= :now')
             ->andWhere('p.isDraft = false')
-            ->setParameter('now', new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
             ->getQuery()
             ->getOneOrNullResult()
         ;
