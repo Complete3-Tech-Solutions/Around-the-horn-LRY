@@ -116,3 +116,58 @@ h4,
     border-bottom: 4px solid var(--ia-cyan);
 }
 .ia-header-band .ia-text-gray { color: rgba(255, 255, 255, 0.7) !important; }
+
+/* =========================================================================
+   Moderator control deck (/admin) — phone-first cockpit. Big tap targets,
+   a sticky live-action dock, and collapsible Settings / Danger zone so the
+   moderator can run the show one-thumbed while talking on stage. */
+
+/* Sticky bottom dock: the live action (Open vote / Close round) stays under
+   the thumb without scrolling. Shown only while a round is on stage. */
+.admin-dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    border-top: 2px solid var(--ia-blue);
+    background: hsl(var(--b1));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-shadow: 0 -12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Collapsible <details> sections (Settings, Danger zone): hide the native
+   marker and show a clear +/− affordance instead. */
+.admin-setup-summary {
+    list-style: none;
+}
+.admin-setup-summary::-webkit-details-marker {
+    display: none;
+}
+.admin-setup-summary::after {
+    content: "+";
+    float: right;
+    font-weight: 400;
+    opacity: 0.45;
+}
+.admin-setup[open] .admin-setup-summary::after {
+    content: "\2212"; /* minus */
+}
+
+/* Danger zone: red outline so it reads as "do not touch during the show". */
+.admin-danger {
+    border-color: hsl(var(--er)) !important;
+}
+
+/* Live-voting pulse dot inside the "Voting open" badge. */
+.ia-live-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: currentColor;
+    animation: ia-live-pulse 1.4s ease-in-out infinite;
+}
+@keyframes ia-live-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+}
