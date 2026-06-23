@@ -56,22 +56,11 @@ class AdminController extends AbstractController
             }
         }
 
-        $defaultSelectedPollId = $stage?->getId();
-        if (null === $defaultSelectedPollId) {
-            foreach ($controlRounds as $row) {
-                if (null !== $row['poll'] && !$row['isDecided'] && !$row['isActive']) {
-                    $defaultSelectedPollId = $row['poll']->getId();
-                    break;
-                }
-            }
-        }
-
         return $this->render('admin/index.html.twig', [
             'polls' => $polls,
             'controlRounds' => $controlRounds,
             'activePoll' => $stage,
             'liveRound' => $liveRound,
-            'defaultSelectedPollId' => $defaultSelectedPollId,
             'standings' => $this->scoreboard->standings(),
             'eventScreen' => $this->eventState->getScreen(),
             'seeded' => \count($roundPolls) > 0,

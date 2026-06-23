@@ -118,11 +118,7 @@ h4,
 .ia-header-band .ia-text-gray { color: rgba(255, 255, 255, 0.7) !important; }
 
 /* =========================================================================
-   Moderator control deck — phone-first, thumb-reach live dock on /admin. */
-.admin-deck [x-cloak] {
-    display: none !important;
-}
-
+   Moderator control deck — solid live dock, spaced cards on /admin. */
 .admin-setup-summary {
     list-style: none;
 }
@@ -130,57 +126,13 @@ h4,
     display: none;
 }
 .admin-setup-summary::after {
-    content: "＋";
+    content: "+";
     float: right;
     font-weight: 400;
-    opacity: 0.5;
+    opacity: 0.45;
 }
 .admin-setup[open] .admin-setup-summary::after {
-    content: "－";
-}
-
-.admin-round-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 12px;
-    border: 2px solid hsl(var(--b3));
-    background: hsl(var(--b1));
-    transition: border-color 0.15s, background-color 0.15s;
-}
-.admin-round-row:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-button.admin-round-row:not(:disabled):active {
-    transform: scale(0.99);
-}
-.admin-round-row--selected {
-    border-color: var(--ia-blue);
-    background: color-mix(in srgb, var(--ia-blue) 8%, hsl(var(--b1)));
-}
-.admin-round-row--live {
-    border-color: var(--ia-cyan);
-    background: color-mix(in srgb, var(--ia-cyan) 10%, hsl(var(--b1)));
-}
-.admin-round-num {
-    width: 2.25rem;
-    text-align: center;
-    font-family: var(--ia-font-display);
-    font-size: 1.5rem;
-    font-weight: 200;
-    line-height: 1;
-    flex-shrink: 0;
-}
-.admin-round-body {
-    min-width: 0;
-    flex: 1;
-}
-.admin-round-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 6px;
+    content: "−";
 }
 
 .admin-dock {
@@ -190,8 +142,7 @@ button.admin-round-row:not(:disabled):active {
     bottom: 0;
     z-index: 40;
     border-top: 2px solid var(--ia-blue);
-    background: color-mix(in srgb, hsl(var(--b1)) 92%, transparent);
-    backdrop-filter: blur(10px);
-    padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.12);
+    background: hsl(var(--b1));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-shadow: 0 -12px 24px rgba(0, 0, 0, 0.15);
 }
