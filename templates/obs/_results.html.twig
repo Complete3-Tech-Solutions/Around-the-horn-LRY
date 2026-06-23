@@ -26,7 +26,6 @@
     <div class="obs-body">
         <div class="obs-round">
             <span class="pill">{{ round ? round.key : 'Live vote' }}</span>
-            {% if round %}<span class="topic">{{ round.label }}</span>{% endif %}
         </div>
         <h1 class="obs-question">{{ round ? round.question : activePoll.title }}</h1>
         <div class="obs-rows">
@@ -66,7 +65,7 @@
         {% endif %}
         <p class="obs-sub">
             {{ nextRound
-                ? 'Up next — ' ~ nextRound.key ~ ': ' ~ nextRound.label
+                ? 'Up next — ' ~ nextRound.key
                 : 'All rounds are in — champion reveal coming up.' }}
         </p>
         <div class="obs-standings">

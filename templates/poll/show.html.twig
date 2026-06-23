@@ -34,7 +34,7 @@
             {# Context strip: which round + time left #}
             <div class="flex items-center justify-between gap-3">
                 <div class="text-[11px] uppercase tracking-[0.18em] ia-text-gray">
-                    {{ round ? round.key ~ ' · ' ~ round.label : 'Audience vote' }}
+                    {{ round ? round.key : 'Audience vote' }}
                 </div>
                 {% if poll.endAt %}
                     <div class="flex items-baseline gap-1.5 border-2 px-3 py-1.5 shrink-0 transition-colors"

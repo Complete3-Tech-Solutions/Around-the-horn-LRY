@@ -29,7 +29,7 @@
         {# Ballot receipt: the pick, the stakes, what happens next #}
         <div class="max-w-md w-full relative z-10 border-2 border-base-300 bg-base-100">
             <div class="border-b-2 border-base-300 px-4 py-3 flex items-center justify-between gap-3">
-                <span class="text-[11px] uppercase tracking-[0.18em] ia-text-gray truncate">{{ round ? round.key ~ ' · ' ~ round.label : 'Your vote' }}</span>
+                <span class="text-[11px] uppercase tracking-[0.18em] ia-text-gray truncate">{{ round ? round.key : 'Your vote' }}</span>
                 <span class="text-[11px] uppercase tracking-[0.18em] font-bold shrink-0" style="color: var(--ia-blue);">✓ Locked in</span>
             </div>
 
