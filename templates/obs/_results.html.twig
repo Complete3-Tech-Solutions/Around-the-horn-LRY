@@ -68,20 +68,24 @@
                 ? 'Up next — ' ~ nextRound.key
                 : 'All rounds are in — champion reveal coming up.' }}
         </p>
-        <div class="obs-standings">
-            {% set topPoints = standings|length > 0 ? standings[0].points : 0 %}
-            {% for row in standings %}
-                {% set leads = row.points == topPoints and topPoints > 0 %}
-                <div class="obs-stand-row {{ leads ? 'lead' : '' }}">
-                    <div class="rank">{{ loop.index }}</div>
-                    <div class="obs-av"><img src="{{ row.founder.headshot }}" alt="{{ row.founder.name }}"></div>
-                    <div class="info">
-                        <div class="nm">{{ row.founder.name }}</div>
-                        <div class="rl">{{ row.founder.sector }}</div>
+        <div class="obs-rows">
+            {% for row in lastRoundResults|default([]) %}
+                <div class="obs-row {{ row.isLeader and row.count > 0 ? 'lead' : '' }}">
+                    <div class="obs-who">
+                        <div class="obs-av"><img src="{{ row.founder.headshot }}" alt="{{ row.founder.name }}"></div>
+                        <div>
+                            <div class="nm">{{ row.founder.name }}</div>
+                            <div class="rl">{{ row.founder.sector }}</div>
+                        </div>
                     </div>
-                    <div class="pts">
-                        <div class="n">{{ row.points }}</div>
-                        <div class="l">{{ row.points == 1 ? 'point' : 'points' }}</div>
+                    <div class="obs-meter">
+                        <div class="obs-track">
+                            <div class="obs-fill" style="width: {{ row.pct }}%;"></div>
+                        </div>
+                        <div class="obs-stat">
+                            <div class="obs-pct">{{ row.pct }}%</div>
+                            <div class="obs-vts">{{ row.count }} vote{{ row.count == 1 ? '' : 's' }}</div>
+                        </div>
                     </div>
                 </div>
             {% endfor %}

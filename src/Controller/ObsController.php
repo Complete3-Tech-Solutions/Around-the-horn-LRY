@@ -96,6 +96,7 @@ class ObsController extends AbstractController
             'roundStates' => $roundStates,
             'lastRound' => null !== $lastDecided ? $lastDecided->getRoundMeta() : null,
             'lastWinners' => null !== $lastDecided ? $this->scoreboard->roundWinners($lastDecided) : [],
+            'lastRoundResults' => null !== $lastDecided ? $this->scoreboard->liveResults($lastDecided) : [],
             'nextRound' => $nextRound,
             'liveResults' => null !== $active ? $this->scoreboard->liveResults($active) : [],
             'standings' => $this->scoreboard->standings(),
