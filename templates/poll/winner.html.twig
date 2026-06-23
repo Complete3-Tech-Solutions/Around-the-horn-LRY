@@ -4,8 +4,6 @@
 
 {% block body %}
 {% set champion = champion|default(null) %}
-{% set standings = standings|default([]) %}
-{% set topPoints = standings|length > 0 ? standings[0].points : 0 %}
 
 {# Self-polling shell — when the moderator hits "Resume live" the screen flag
    clears and this re-polls back to the ballot/standby. Never hx-select "body". #}
@@ -45,23 +43,6 @@
                     <p class="ia-text-gray text-sm mt-2">Tallying the final results…</p>
                 {% endif %}
             </div>
-
-            {% if standings is not empty %}
-                <div class="border-t-2 border-base-300">
-                    {% for row in standings %}
-                        {% set leads = topPoints > 0 and row.points == topPoints %}
-                        <div class="flex items-center gap-3 px-4 py-3 {{ not loop.last ? 'border-b border-base-300' : '' }}">
-                            <img src="{{ row.founder.headshot }}" alt="{{ row.founder.name }}"
-                                 class="w-9 h-9 shrink-0 rounded-full border-2 {{ leads ? 'border-secondary' : 'border-base-300' }} bg-base-200 object-cover">
-                            <div class="min-w-0 grow leading-tight">
-                                <div class="font-medium truncate">{{ row.founder.name }}</div>
-                            </div>
-                            {% if leads %}<span class="text-[10px] uppercase tracking-[0.14em] font-bold shrink-0" style="color: var(--ia-cyan);">Winner</span>{% endif %}
-                            <span class="font-mono text-2xl leading-none shrink-0 {{ leads ? 'font-bold' : '' }}">{{ row.points }}</span>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
 
             <div class="border-t-2 border-base-300 px-4 py-3 text-center">
                 <p class="text-[11px] ia-text-gray">Thanks for playing — the results are on the big screen.</p>

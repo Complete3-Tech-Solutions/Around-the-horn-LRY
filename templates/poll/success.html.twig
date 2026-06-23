@@ -39,7 +39,7 @@
                          class="w-20 h-20 mx-auto border-2 border-base-300 bg-base-200 object-cover">
                     <h1 class="text-3xl font-display mt-3" style="font-weight:200;">{{ picked.name }}</h1>
                     <p class="text-[11px] uppercase tracking-[0.14em] ia-text-gray mt-1">{{ picked.sector }}</p>
-                    <p class="text-sm mt-4 leading-snug">A win for {{ picked.name }} sends the Innovate Alabama donation to <b>{{ picked.charity }}</b>.</p>
+                    <p class="text-sm mt-4 leading-snug">Live results are on the big screen.</p>
                 {% else %}
                     <div class="ia-text-cyan">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,7 +47,7 @@
                         </svg>
                     </div>
                     <h1 class="text-3xl font-display mt-3" style="font-weight:200;">Thank you!</h1>
-                    <p class="ia-text-gray text-sm mt-2">Your vote for "{{ title }}" was recorded.</p>
+                    <p class="ia-text-gray text-sm mt-2">Your vote{% if round %} for this round{% endif %} was recorded.</p>
                 {% endif %}
             </div>
 

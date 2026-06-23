@@ -28,26 +28,22 @@
     } %}
 
     <div class="min-h-screen bg-base-100">
-        <div class="container mx-auto px-3 max-w-xl pt-6 pb-36"
+        <div class="container mx-auto px-3 max-w-xl pt-5 pb-36"
              x-data="window.iaBallot('{{ poll.endAt ? poll.endAt|date('Y-m-d\\TH:i:s\\Z') : '' }}')">
 
-            {# Context strip: which round + time left #}
-            <div class="flex items-center justify-between gap-3">
-                <div class="text-[11px] uppercase tracking-[0.18em] ia-text-gray">
-                    {{ round ? round.key : 'Audience vote' }}
-                </div>
-                {% if poll.endAt %}
+            {% if poll.endAt %}
+                <div class="flex justify-end mb-3">
                     <div class="flex items-baseline gap-1.5 border-2 px-3 py-1.5 shrink-0 transition-colors"
                          :class="(warn || expired) ? 'border-error' : 'border-base-300'">
                         <span class="font-mono text-lg leading-none" :class="(warn || expired) ? 'text-error font-bold' : ''"
                               x-text="expired ? 'CLOSED' : minutes + ':' + seconds">--:--</span>
                         <span class="text-[10px] uppercase tracking-[0.14em] ia-text-gray" x-show="!expired">left</span>
                     </div>
-                {% endif %}
-            </div>
+                </div>
+            {% endif %}
 
-            {# The question being scored #}
-            <h1 class="text-2xl sm:text-3xl font-display leading-tight mt-3 mb-6" style="font-weight:200;">{{ poll.title }}</h1>
+            {# Matches /obs — one voting question per round #}
+            <h1 class="text-2xl sm:text-3xl font-display leading-tight mb-6" style="font-weight:200;">{{ round ? round.question : poll.title }}</h1>
 
             {# Ballot — one tap to choose, faces match the big screen #}
             {{ form_start(form) }}
@@ -87,11 +83,11 @@
             <div class="fixed bottom-0 inset-x-0 z-20 border-t-2 border-base-300 bg-base-100/95 backdrop-blur-sm">
                 <div class="container mx-auto px-3 py-3 max-w-xl">
                     <button type="submit" class="btn btn-neutral btn-lg w-full text-lg" :disabled="expired">
-                        <span x-show="!expired" x-text="selected === null ? 'Tap a founder to choose' : 'Lock in my vote'">Lock in my vote</span>
+                        <span x-show="!expired" x-text="selected === null ? 'Tap a participant to choose' : 'Lock in my vote'">Lock in my vote</span>
                         <span x-show="expired" style="display:none;">Round closed — watch the screen</span>
                     </button>
                     <p class="mt-2 text-center text-[11px] ia-text-gray leading-snug">
-                        One vote per device · You're helping send the donation to the winning founder's charity
+                        One vote per device · Results are on the big screen
                     </p>
                 </div>
             </div>
