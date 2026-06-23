@@ -432,46 +432,68 @@ html, body {
     gap: 36px;
 }
 
-/* On-stage preview (before voting opens) — compact horizontal row */
-.obs-cards-stage {
-    margin-top: 4px;
-    gap: 20px;
-    justify-content: center;
+/* On-stage preview (before voting opens) — three panels, photo + name with title below */
+.obs-body:has(.obs-stage-lineup) .obs-question {
+    margin-bottom: 44px;
 }
 
-.obs-body:has(.obs-cards-stage) .obs-question {
-    margin-bottom: 32px;
+.obs-stage-lineup {
+    display: flex;
+    gap: 28px;
+    align-items: stretch;
 }
 
-.obs-cards-stage .obs-card {
-    flex: 0 1 240px;
-    max-width: 260px;
-    padding: 14px 16px 12px;
-    border-radius: 16px;
+.obs-stage-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 26px 28px 24px;
+    background: var(--obs-card);
+    border: 1px solid var(--obs-card-line);
+    border-radius: 18px;
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
 }
 
-.obs-cards-stage .obs-card::before {
-    height: 4px;
+.obs-stage-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--ia-purple), var(--ia-cyan));
 }
 
-.obs-cards-stage .obs-card .obs-av {
-    width: 64px;
-    height: 64px;
-    font-size: 24px;
-    border-width: 3px;
-    box-shadow: 0 0 0 2px var(--ia-cyan);
-    margin-bottom: 8px;
+.obs-stage-panel .obs-av {
+    width: 88px;
+    height: 88px;
+    font-size: 30px;
+    flex-shrink: 0;
 }
 
-.obs-cards-stage .obs-card .nm {
-    font-size: 20px;
-    margin-bottom: 4px;
+.obs-stage-info {
+    min-width: 0;
+    padding-top: 2px;
 }
 
-.obs-cards-stage .obs-card .rl {
-    font-size: 13px;
-    line-height: 1.25;
-    margin-bottom: 0;
+.obs-stage-info .nm {
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.08;
+    color: var(--obs-text);
+}
+
+.obs-stage-info .rl {
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--obs-muted);
+    margin-top: 8px;
+    line-height: 1.35;
 }
 
 .obs-card {
