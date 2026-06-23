@@ -157,16 +157,16 @@ html, body {
 .obs-header-qr {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 28px;
 }
 
 .obs-header-qr .obs-qr {
-    width: 96px;
-    height: 96px;
-    border-radius: 14px;
+    width: 140px;
+    height: 140px;
+    border-radius: 16px;
     background: #fff;
     border: 2px solid rgba(255, 255, 255, 0.35);
-    padding: 8px;
+    padding: 10px;
     flex-shrink: 0;
 }
 
@@ -178,10 +178,16 @@ html, body {
 
 .obs-scan-label {
     font-weight: 700;
-    font-size: 20px;
-    letter-spacing: 5px;
+    font-size: 34px;
+    letter-spacing: 2px;
     text-transform: uppercase;
     color: #fff;
+    line-height: 1.15;
+    max-width: 280px;
+}
+
+.obs-scan-label b {
+    color: var(--ia-cyan);
 }
 
 /* ---- Main body ---- */
