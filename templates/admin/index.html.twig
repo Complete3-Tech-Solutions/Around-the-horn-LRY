@@ -3,11 +3,12 @@
 {% block title %}Moderator Control — Around the Horn{% endblock %}
 
 {% block body %}
-    {% include 'components/_brand_header.html.twig' with {
-        'heading': 'Around the Horn',
-        'subtitle': 'Moderator control',
-        'compact': true,
-    } %}
+    {% include 'components/_brand_header.html.twig' with {'heading': 'Around the Horn', 'subtitle': 'Moderator control'} %}
 
+    {# The whole show runs from the control deck: rounds (add / edit / delete /
+       go live / close), founders, OBS screen + theme, and reset. There is no
+       separate "polls" list — every votable thing here is a round. #}
     {{ include('admin/_control_deck.html.twig') }}
+
+    <div class="container mx-auto px-3 pb-8"></div>
 {% endblock %}
