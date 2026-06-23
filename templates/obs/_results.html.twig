@@ -27,7 +27,7 @@
         <div class="obs-round">
             <span class="pill">{{ round ? round.key : 'Live vote' }}</span>
         </div>
-        <h1 class="obs-question">{{ round ? round.question : activePoll.title }}</h1>
+        <h1 class="obs-question">{{ activePoll.votingPrompt }}</h1>
         <div class="obs-rows">
             {% for row in liveResults %}
                 {% set isLeader = row.isLeader and activePoll.totalVotes > 0 %}

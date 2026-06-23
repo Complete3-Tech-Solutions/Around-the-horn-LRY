@@ -100,6 +100,19 @@ class Poll
         return $this;
     }
 
+    /**
+     * The one question shown on /obs and the audience ballot — audience
+     * question when set, otherwise the debate headline.
+     */
+    public function getVotingPrompt(): string
+    {
+        if ($this->roundQuestion) {
+            return $this->roundQuestion;
+        }
+
+        return $this->title ?? 'Who made the strongest case this round?';
+    }
+
     public function getShortCode(): ?string
     {
         return $this->shortCode;
@@ -323,7 +336,7 @@ class Poll
             'key' => 'Round '.$this->roundNumber,
             'label' => $this->roundLabel ?: ($this->title ?? ''),
             'title' => $this->title ?? '',
-            'question' => $this->roundQuestion ?: 'Who made the strongest case this round?',
+            'question' => $this->getVotingPrompt(),
             'myths' => $this->getMyths(),
         ];
     }
