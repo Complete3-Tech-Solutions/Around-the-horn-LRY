@@ -432,13 +432,42 @@ html, body {
     gap: 36px;
 }
 
-/* On-stage preview (before voting opens) — same row as intro, tighter under the question */
+/* On-stage preview (before voting opens) — horizontal row, smaller than intro cards */
 .obs-cards-stage {
     margin-top: 8px;
+    gap: 28px;
 }
 
 .obs-body:has(.obs-cards-stage) .obs-question {
     margin-bottom: 40px;
+}
+
+.obs-cards-stage .obs-card {
+    padding: 22px 24px 20px;
+    border-radius: 20px;
+}
+
+.obs-cards-stage .obs-card::before {
+    height: 6px;
+}
+
+.obs-cards-stage .obs-card .obs-av {
+    width: 96px;
+    height: 96px;
+    font-size: 34px;
+    border-width: 4px;
+    box-shadow: 0 0 0 3px var(--ia-cyan);
+    margin-bottom: 12px;
+}
+
+.obs-cards-stage .obs-card .nm {
+    font-size: 28px;
+    margin-bottom: 6px;
+}
+
+.obs-cards-stage .obs-card .rl {
+    font-size: 16px;
+    margin-bottom: 0;
 }
 
 .obs-card {
