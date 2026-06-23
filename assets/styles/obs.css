@@ -432,6 +432,15 @@ html, body {
     gap: 36px;
 }
 
+/* On-stage preview (before voting opens) — same row as intro, tighter under the question */
+.obs-cards-stage {
+    margin-top: 8px;
+}
+
+.obs-body:has(.obs-cards-stage) .obs-question {
+    margin-bottom: 40px;
+}
+
 .obs-card {
     flex: 1;
     background: var(--obs-card);
