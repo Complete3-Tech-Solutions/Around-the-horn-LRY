@@ -432,41 +432,45 @@ html, body {
     gap: 36px;
 }
 
-/* On-stage preview (before voting opens) — horizontal row, smaller than intro cards */
+/* On-stage preview (before voting opens) — compact horizontal row */
 .obs-cards-stage {
-    margin-top: 8px;
-    gap: 28px;
+    margin-top: 4px;
+    gap: 20px;
+    justify-content: center;
 }
 
 .obs-body:has(.obs-cards-stage) .obs-question {
-    margin-bottom: 40px;
+    margin-bottom: 32px;
 }
 
 .obs-cards-stage .obs-card {
-    padding: 22px 24px 20px;
-    border-radius: 20px;
+    flex: 0 1 240px;
+    max-width: 260px;
+    padding: 14px 16px 12px;
+    border-radius: 16px;
 }
 
 .obs-cards-stage .obs-card::before {
-    height: 6px;
+    height: 4px;
 }
 
 .obs-cards-stage .obs-card .obs-av {
-    width: 96px;
-    height: 96px;
-    font-size: 34px;
-    border-width: 4px;
-    box-shadow: 0 0 0 3px var(--ia-cyan);
-    margin-bottom: 12px;
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+    border-width: 3px;
+    box-shadow: 0 0 0 2px var(--ia-cyan);
+    margin-bottom: 8px;
 }
 
 .obs-cards-stage .obs-card .nm {
-    font-size: 28px;
-    margin-bottom: 6px;
+    font-size: 20px;
+    margin-bottom: 4px;
 }
 
 .obs-cards-stage .obs-card .rl {
-    font-size: 16px;
+    font-size: 13px;
+    line-height: 1.25;
     margin-bottom: 0;
 }
 
