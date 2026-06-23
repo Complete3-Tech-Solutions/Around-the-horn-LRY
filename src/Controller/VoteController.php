@@ -113,12 +113,15 @@ class VoteController extends AbstractController
     private function renderWaiting(): Response
     {
         $board = $this->board();
+        $lastDecided = $this->scoreboard->lastDecidedPoll();
 
         return $this->render('poll/waiting.html.twig', [
             'standings' => $board['standings'],
             'decided_rounds' => $board['decided_rounds'],
             'total_rounds' => $this->scoreboard->totalRoundCount(),
             'round_metas' => $this->scoreboard->roundMetas(),
+            'last_round' => null !== $lastDecided ? $lastDecided->getRoundMeta() : null,
+            'last_winners' => null !== $lastDecided ? $this->scoreboard->roundWinners($lastDecided) : [],
         ]);
     }
 

@@ -69,8 +69,6 @@ class ObsController extends AbstractController
             $screen = 'intro';
         } elseif (null !== $active) {
             $screen = 'live';
-        } elseif ($total > 0 && $decided >= $total) {
-            $screen = 'winner';
         } elseif ($decided > 0) {
             $screen = 'standby';
         } else {
