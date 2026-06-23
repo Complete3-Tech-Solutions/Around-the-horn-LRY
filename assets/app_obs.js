@@ -28,15 +28,17 @@ function layoutObsMeters() {
 }
 
 document.addEventListener('alpine:init', () => {
-    Alpine.data('timer', (endDate) => ({
-        display: '--:--',
+    Alpine.data('voteTimer', (startIso, endIso) => ({
+        display: '--',
+        label: 'left',
+        waiting: false,
         isWarn: false,
         isExpired: false,
         _t: null,
 
         init() {
             this.tick();
-            this._t = setInterval(() => this.tick(), 1000);
+            this._t = setInterval(() => this.tick(), 250);
         },
 
         destroy() {
@@ -47,17 +49,34 @@ document.addEventListener('alpine:init', () => {
         },
 
         tick() {
-            const diff = new Date(endDate) - new Date();
+            const now = Date.now();
+            const start = new Date(startIso).getTime();
+            const end = new Date(endIso).getTime();
+
+            if (now < start) {
+                this.waiting = true;
+                this.isExpired = false;
+                this.isWarn = false;
+                this.display = String(Math.ceil((start - now) / 1000));
+                this.label = 'until voting opens';
+                return;
+            }
+
+            this.waiting = false;
+            const diff = end - now;
             if (diff <= 0) {
                 this.isExpired = true;
                 this.isWarn = false;
                 this.display = '0:00';
+                this.label = 'closed';
                 return;
             }
+
             const m = Math.floor(diff / 60000);
             const s = Math.floor((diff % 60000) / 1000);
             this.display = m + ':' + String(s).padStart(2, '0');
-            this.isWarn = diff <= 30000;
+            this.label = 'left';
+            this.isWarn = diff <= 10000;
             this.isExpired = false;
         },
     }));
@@ -73,6 +92,7 @@ document.body.addEventListener('htmx:afterSwap', (event) => {
         return;
     }
     layoutObsMeters();
+    Alpine.initTree(event.detail.target);
     const stage = document.getElementById('obs-stage');
     stage?.classList.toggle('obs-intro', event.detail.target.querySelector('.intro-body') !== null);
 });

@@ -11,6 +11,7 @@ use Symfony\Contracts\Cache\CacheInterface;
 
 class PollService
 {
+    public const VOTE_DELAY_SECONDS = 3;
     public const VOTE_WINDOW_SECONDS = 30;
 
     public function __construct(

@@ -91,13 +91,17 @@ class RoundController extends AbstractController
 
         $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
         $poll
-            ->setStartAt($now)
-            ->setEndAt($now->modify('+'.PollService::VOTE_WINDOW_SECONDS.' seconds'));
+            ->setStartAt($now->modify('+'.PollService::VOTE_DELAY_SECONDS.' seconds'))
+            ->setEndAt($now->modify('+'.(PollService::VOTE_DELAY_SECONDS + PollService::VOTE_WINDOW_SECONDS).' seconds'));
 
         $this->entityManager->flush();
         $this->cache->delete('phone_standings');
 
-        $this->addFlash(FlashTypeEnum::SUCCESS->value, sprintf('Voting open for %d seconds.', PollService::VOTE_WINDOW_SECONDS));
+        $this->addFlash(FlashTypeEnum::SUCCESS->value, sprintf(
+            'Voting opens in %d seconds, then %d seconds to vote.',
+            PollService::VOTE_DELAY_SECONDS,
+            PollService::VOTE_WINDOW_SECONDS,
+        ));
 
         return $this->redirectToRoute('app_admin_index');
     }

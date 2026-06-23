@@ -155,7 +155,31 @@ class Poll
         return false === $this->isDraft;
     }
 
-    /** Audience can submit votes right now (30-second window after Open vote). */
+    /** Moderator opened voting — warmup and/or live window (not the go-live placeholder). */
+    public function isVotingPhase(): bool
+    {
+        if (!$this->isOnStage()) {
+            return false;
+        }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+
+        return $this->startAt < $now->modify('+1 year');
+    }
+
+    /** Three-second buffer after Open vote before the countdown begins. */
+    public function isVotingScheduled(): bool
+    {
+        if (!$this->isVotingPhase()) {
+            return false;
+        }
+
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+
+        return $this->startAt > $now;
+    }
+
+    /** Audience can submit votes right now (30-second window after warmup). */
     public function isVotingOpen(): bool
     {
         if (!$this->isOnStage()) {

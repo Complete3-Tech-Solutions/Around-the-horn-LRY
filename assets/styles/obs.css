@@ -209,8 +209,51 @@ html, body {
 .obs-round {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 20px;
     margin-bottom: 22px;
+}
+
+.obs-vote-timer {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    border: 2px solid var(--obs-line);
+    padding: 10px 20px;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.obs-vote-timer.waiting {
+    border-color: var(--ia-cyan);
+}
+
+.obs-vote-timer.warn {
+    border-color: #ff476e;
+}
+
+.obs-vote-timer .n {
+    font-weight: 800;
+    font-size: 42px;
+    line-height: 1;
+    color: var(--obs-accent);
+    font-variant-numeric: tabular-nums;
+}
+
+.obs-vote-timer.waiting .n {
+    color: var(--ia-cyan);
+}
+
+.obs-vote-timer.warn .n {
+    color: #ff476e;
+}
+
+.obs-vote-timer .l {
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--obs-muted);
 }
 
 .obs-round .pill {

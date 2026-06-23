@@ -29,18 +29,17 @@
 
     <div class="min-h-screen bg-base-100">
         <div class="container mx-auto px-3 max-w-xl pt-5 pb-36"
-             x-data="window.iaBallot('{{ poll.endAt ? poll.endAt|date('Y-m-d\\TH:i:s\\Z') : '' }}')">
+             x-data="window.iaBallot('{{ poll.startAt|date('Y-m-d\\TH:i:s\\Z') }}', '{{ poll.endAt|date('Y-m-d\\TH:i:s\\Z') }}')">
 
-            {% if poll.endAt %}
-                <div class="flex justify-end mb-3">
-                    <div class="flex items-baseline gap-1.5 border-2 px-3 py-1.5 shrink-0 transition-colors"
-                         :class="(warn || expired) ? 'border-error' : 'border-base-300'">
-                        <span class="font-mono text-lg leading-none" :class="(warn || expired) ? 'text-error font-bold' : ''"
-                              x-text="expired ? 'CLOSED' : minutes + ':' + seconds">--:--</span>
-                        <span class="text-[10px] uppercase tracking-[0.14em] ia-text-gray" x-show="!expired">left</span>
-                    </div>
+            <div class="flex justify-end mb-3">
+                <div class="flex items-baseline gap-1.5 border-2 px-3 py-1.5 shrink-0 transition-colors"
+                     :class="(warn || expired) ? 'border-error' : (waiting ? 'border-secondary' : 'border-base-300')">
+                    <span class="font-mono text-lg leading-none" :class="(warn || expired) ? 'text-error font-bold' : (waiting ? 'font-bold' : '')"
+                          x-text="expired ? 'CLOSED' : (waiting ? seconds : minutes + ':' + seconds)">--:--</span>
+                    <span class="text-[10px] uppercase tracking-[0.14em] ia-text-gray" x-show="!expired"
+                          x-text="waiting ? 'until open' : 'left'"></span>
                 </div>
-            {% endif %}
+            </div>
 
             <h1 class="text-2xl sm:text-3xl font-display leading-tight mb-6" style="font-weight:200;">{{ poll.votingPrompt }}</h1>
 
@@ -49,8 +48,8 @@
             <div class="flex flex-col gap-3">
                 {% for choice in form.choice %}
                     {% set founder = (round and founders[loop.index0] is defined) ? founders[loop.index0] : null %}
-                    <label class="relative block cursor-pointer select-none transition-opacity"
-                           :class="selected !== null && selected !== {{ choice.vars.value }} ? 'opacity-55' : ''">
+                    <label class="relative block select-none"
+                           :class="(waiting || expired) ? 'opacity-60 cursor-not-allowed pointer-events-none' : (selected !== null && selected !== {{ choice.vars.value }} ? 'opacity-55 cursor-pointer' : 'cursor-pointer')">
                         {{ form_widget(choice, {'attr': {'class': 'peer sr-only', '@change': 'selected = ' ~ choice.vars.value}}) }}
                         {# Selected state is Alpine-driven: the tick box is a descendant of
                            this row, so Tailwind's peer-checked (sibling combinator) can't
@@ -81,8 +80,9 @@
             {# Thumb-reach submit, always visible #}
             <div class="fixed bottom-0 inset-x-0 z-20 border-t-2 border-base-300 bg-base-100/95 backdrop-blur-sm">
                 <div class="container mx-auto px-3 py-3 max-w-xl">
-                    <button type="submit" class="btn btn-neutral btn-lg w-full text-lg" :disabled="expired">
-                        <span x-show="!expired" x-text="selected === null ? 'Tap a participant to choose' : 'Lock in my vote'">Lock in my vote</span>
+                    <button type="submit" class="btn btn-neutral btn-lg w-full text-lg" :disabled="waiting || expired">
+                        <span x-show="waiting" style="display:none;">Voting opens soon…</span>
+                        <span x-show="!waiting && !expired" x-text="selected === null ? 'Tap a participant to choose' : 'Lock in my vote'">Lock in my vote</span>
                         <span x-show="expired" style="display:none;">Round closed — watch the screen</span>
                     </button>
                     <p class="mt-2 text-center text-[11px] ia-text-gray leading-snug">
@@ -101,8 +101,9 @@
     // Alpine.data, which only registers during the initial alpine:init and
     // is dead after a swap).
     window.iaRoundClosed = false;
-    window.iaBallot = (endIso) => ({
+    window.iaBallot = (startIso, endIso) => ({
         selected: null,
+        waiting: false,
         expired: false,
         warn: false,
         minutes: '--',
@@ -110,19 +111,32 @@
         init() {
             const checked = this.$root.querySelector('input[type=radio]:checked');
             if (checked) this.selected = parseInt(checked.value, 10);
-            if (!endIso) return;
             this.tick();
-            this._t = setInterval(() => this.tick(), 1000);
+            this._t = setInterval(() => this.tick(), 250);
         },
         tick() {
-            const diff = new Date(endIso) - new Date();
+            const now = Date.now();
+            const start = new Date(startIso).getTime();
+            const end = new Date(endIso).getTime();
+
+            if (now < start) {
+                this.waiting = true;
+                this.expired = false;
+                this.warn = false;
+                this.minutes = '0';
+                this.seconds = String(Math.ceil((start - now) / 1000));
+                return;
+            }
+
+            this.waiting = false;
+            const diff = end - now;
             if (diff <= 0) {
                 this.expired = true;
-                window.iaRoundClosed = true; // page starts polling /vote for the next state
+                window.iaRoundClosed = true;
                 if (this._t) clearInterval(this._t);
                 return;
             }
-            this.warn = diff <= 30000;
+            this.warn = diff <= 10000;
             this.minutes = String(Math.floor(diff / 60000)).padStart(2, '0');
             this.seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
         },

@@ -49,7 +49,7 @@ class VoteController extends AbstractController
             $poll = $this->pollService->getStagePoll();
             if (null === $poll) {
                 $response = $this->renderWaiting();
-            } elseif (!$poll->isVotingOpen()) {
+            } elseif (!$poll->isVotingPhase()) {
                 $response = $this->renderPreview($poll);
             } else {
                 $response = $this->handle($request, $poll, $voterId, true);
@@ -65,7 +65,7 @@ class VoteController extends AbstractController
 
     private function handle(Request $request, Poll $poll, string $voterId, bool $liveEntry): Response
     {
-        if ($poll->isDraft() || !$poll->isVotingOpen()) {
+        if ($poll->isDraft() || !$poll->isVotingPhase()) {
             return $this->renderWaiting();
         }
 
@@ -89,6 +89,12 @@ class VoteController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if (!$poll->isVotingOpen()) {
+                $this->addFlash(FlashTypeEnum::ERROR->value, 'Voting is not open yet — wait for the countdown.');
+
+                return $this->redirectToRoute('app_vote_live');
+            }
+
             $ip = $request->getClientIp() ?? 'noip';
 
             if (!$this->rateLimiter->allow('voter:'.$voterId, 8, 30)

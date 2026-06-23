@@ -23,12 +23,18 @@
     </div>
 
 {% elseif screen == 'live' and activePoll %}
-    <div class="obs-body">
+    <div class="obs-body"{% if votingPhase|default(false) %} x-data="voteTimer('{{ activePoll.startAt|date('Y-m-d\\TH:i:s\\Z') }}', '{{ activePoll.endAt|date('Y-m-d\\TH:i:s\\Z') }}')"{% endif %}>
         <div class="obs-round">
             <span class="pill">{{ round ? round.key : 'Live vote' }}</span>
+            {% if votingPhase|default(false) %}
+                <div class="obs-vote-timer" :class="{ warn: isWarn, waiting: waiting, expired: isExpired }">
+                    <span class="n" x-text="display">--:--</span>
+                    <span class="l" x-text="label">left</span>
+                </div>
+            {% endif %}
         </div>
         <h1 class="obs-question">{{ activePoll.votingPrompt }}</h1>
-        {% if votingOpen|default(false) %}
+        {% if votingPhase|default(false) %}
         <div class="obs-rows">
             {% for row in liveResults %}
                 {% set isLeader = row.isLeader and activePoll.totalVotes > 0 %}

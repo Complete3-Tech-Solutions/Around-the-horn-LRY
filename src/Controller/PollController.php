@@ -54,7 +54,7 @@ class PollController extends AbstractController
             return $this->render('poll/error.html.twig', ['message' => 'This poll is not available.']);
         }
 
-        if (!$poll->isVotingOpen()) {
+        if (!$poll->isVotingPhase()) {
             return $this->render('poll/preview.html.twig', [
                 'poll' => $poll,
                 'total_rounds' => $this->pollService->countRoundPolls(),
@@ -81,6 +81,12 @@ class PollController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if (!$poll->isVotingOpen()) {
+                $this->addFlash(FlashTypeEnum::ERROR->value, 'Voting is not open yet — wait for the countdown.');
+
+                return $this->redirectToRoute('app_poll_show', ['shortCode' => $poll->getShortCode()]);
+            }
+
             $ip = $request->getClientIp() ?? 'noip';
 
             // Throttle: tight per-device cap, generous per-IP backstop (50-75
