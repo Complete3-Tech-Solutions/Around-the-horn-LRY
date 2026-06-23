@@ -1,28 +1,11 @@
-{# Around the Horn — OBS stage fragment (body + footer + live-badge OOB) #}
+{# Around the Horn — OBS stage fragment (body + header QR OOB) #}
 
-{% set badgeClass = screen == 'intro' ? 'soon' : (screen == 'standby' ? 'standby' : '') %}
-{% set badgeLabel = screen == 'intro' ? 'Starting Soon' : (screen == 'standby' ? 'Stand By' : (screen == 'winner' ? 'Final' : 'Live')) %}
-
-<div id="obs-live-badge" class="obs-live-badge {{ badgeClass }}" hx-swap-oob="true">
-    <span class="dot"></span>
-    <span>{{ badgeLabel }}</span>
+<div id="obs-header-qr" class="obs-header-qr" hx-swap-oob="true">
+    {% if qr %}
+        <div class="obs-qr"><img src="{{ qr }}" alt="Scan to vote"></div>
+    {% endif %}
+    <span class="obs-scan-label">Scan QR</span>
 </div>
-
-{# Horizontal scoreboard shown on the footer bottom line (every screen). #}
-{% macro scoreline(standings) %}
-    {% set topPoints = standings|length > 0 ? standings[0].points : 0 %}
-    <div class="obs-scoreline">
-        <span class="label">Scoreboard</span>
-        {% for s in standings %}
-            {% set lead = s.points == topPoints and topPoints > 0 %}
-            <div class="obs-score-chip {{ lead ? 'lead' : '' }}">
-                <div class="obs-chip-av">{% if s.founder.headshot %}<img src="{{ s.founder.headshot }}" alt="{{ s.founder.name }}">{% else %}{{ s.founder.initials }}{% endif %}</div>
-                <div class="obs-chip-info"><span class="nm">{{ s.founder.name }}</span><span class="pts">{{ s.points }}</span></div>
-            </div>
-        {% endfor %}
-    </div>
-{% endmacro %}
-{% import _self as ui %}
 
 {% if screen == 'winner' %}
     <div class="obs-winner-center">
@@ -38,18 +21,6 @@
             <div class="obs-wcharity">Tallying the final votes…</div>
         {% endif %}
     </div>
-
-    <footer class="obs-footer">
-        <div class="obs-scan">
-            <div>
-                <div class="big">Thank you for <b>voting live</b></div>
-                <div class="small">{{ eventTagline }}</div>
-            </div>
-        </div>
-        <div class="obs-footer-right">
-            {{ ui.scoreline(standings) }}
-        </div>
-    </footer>
 
 {% elseif screen == 'live' and activePoll %}
     <div class="obs-body">
@@ -82,21 +53,6 @@
             {% endfor %}
         </div>
     </div>
-
-    <footer class="obs-footer">
-        <div class="obs-scan">
-            {% if qr %}
-                <div class="obs-qr"><img src="{{ qr }}" alt="Scan to vote"></div>
-            {% endif %}
-            <div>
-                <div class="big">Scan to <b>vote live</b></div>
-                <div class="small">{{ activePoll.totalVotes|number_format }} votes cast · pick your favorite each round</div>
-            </div>
-        </div>
-        <div class="obs-footer-right">
-            {{ ui.scoreline(standings) }}
-        </div>
-    </footer>
 
 {% elseif screen == 'standby' %}
     <div class="obs-body">
@@ -133,18 +89,6 @@
         </div>
     </div>
 
-    <footer class="obs-footer">
-        <div class="obs-scan">
-            <div>
-                <div class="big">Stand by for the <b>next round</b></div>
-                <div class="small">Already scanned? Stay on your page — it follows the show.</div>
-            </div>
-        </div>
-        <div class="obs-footer-right">
-            {{ ui.scoreline(standings) }}
-        </div>
-    </footer>
-
 {% else %}
     {# Intro / pre-show #}
     <div class="obs-body intro-body">
@@ -165,19 +109,4 @@
             {% endfor %}
         </div>
     </div>
-
-    <footer class="obs-footer intro-footer">
-        <div class="obs-scan">
-            {% if qr %}
-                <div class="obs-qr big"><img src="{{ qr }}" alt="Scan to vote"></div>
-            {% endif %}
-            <div>
-                <div class="big">Scan to <b>join the vote</b></div>
-                <div class="small">One scan covers every round — your phone follows the show.</div>
-            </div>
-        </div>
-        <div class="obs-footer-right">
-            {{ ui.scoreline(standings) }}
-        </div>
-    </footer>
 {% endif %}

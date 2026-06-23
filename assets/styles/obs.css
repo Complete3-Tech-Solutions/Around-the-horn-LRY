@@ -1,6 +1,6 @@
 /* =========================================================================
    Around the Horn — OBS / LED wall (Innovate Alabama mockup layout)
-   1920×1080 stage · purple header band · horizontal vote meters · footer QR
+   1920×1080 stage · purple header band · horizontal vote meters · header QR
    ========================================================================= */
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700;800;900&display=swap');
 
@@ -76,7 +76,7 @@ html, body {
 }
 
 /* The 2s-refreshed fragment swaps in here; display:contents lets its
-   .obs-body / .obs-footer become flex children of the stage column. */
+   .obs-body become a flex child of the stage column. */
 #obs-stage-inner { display: contents; }
 
 #obs-stage::after {
@@ -154,55 +154,34 @@ html, body {
     line-height: 1;
 }
 
-.obs-live-badge {
+.obs-header-qr {
     display: flex;
     align-items: center;
-    gap: 13px;
+    gap: 20px;
+}
+
+.obs-header-qr .obs-qr {
+    width: 96px;
+    height: 96px;
+    border-radius: 14px;
+    background: #fff;
     border: 2px solid rgba(255, 255, 255, 0.35);
-    padding: 13px 26px;
-    border-radius: 100px;
+    padding: 8px;
+    flex-shrink: 0;
 }
 
-.obs-live-badge .dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #ff476e;
-    animation: obs-pulse-dot 1.8s infinite;
+.obs-header-qr .obs-qr img {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
-.obs-live-badge.soon .dot {
-    background: var(--ia-cyan);
-    animation: obs-pulse-dot 2s infinite;
-}
-
-.obs-live-badge.standby .dot {
-    background: var(--ia-cyan);
-    animation: none;
-    opacity: 0.85;
-}
-
-.obs-live-badge span:last-child {
+.obs-scan-label {
     font-weight: 700;
     font-size: 20px;
     letter-spacing: 5px;
     text-transform: uppercase;
-}
-
-@keyframes obs-pulse-dot {
-    0% { box-shadow: 0 0 0 0 rgba(255, 71, 110, 0.6); }
-    70% { box-shadow: 0 0 0 16px rgba(255, 71, 110, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 71, 110, 0); }
-}
-
-.obs-live-badge.soon .dot {
-    animation-name: obs-pulse-cyan;
-}
-
-@keyframes obs-pulse-cyan {
-    0% { box-shadow: 0 0 0 0 rgba(4, 178, 226, 0.6); }
-    70% { box-shadow: 0 0 0 16px rgba(4, 178, 226, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(4, 178, 226, 0); }
+    color: #fff;
 }
 
 /* ---- Main body ---- */
@@ -210,7 +189,7 @@ html, body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 56px 70px 0;
+    padding: 56px 70px 56px;
     position: relative;
     z-index: 2;
     min-height: 0;
@@ -648,100 +627,7 @@ html, body {
     color: var(--obs-text);
 }
 
-/* ---- Footer ---- */
-.obs-footer {
-    flex: 0 0 132px;
-    background: var(--obs-footer);
-    border-top: 2px solid var(--obs-line);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 70px;
-    position: relative;
-    z-index: 3;
-}
-
-.obs-scan {
-    display: flex;
-    align-items: center;
-    gap: 22px;
-}
-
-.obs-qr {
-    width: 88px;
-    height: 88px;
-    border-radius: 14px;
-    background: #fff;
-    border: 2px solid var(--obs-line);
-    padding: 8px;
-    flex-shrink: 0;
-}
-
-.obs-qr img {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-.obs-scan .big {
-    font-weight: 700;
-    font-size: 27px;
-    color: var(--obs-accent);
-    line-height: 1.1;
-}
-
-.obs-scan .big b {
-    color: var(--ia-cyan);
-}
-
-.obs-scan .small {
-    font-weight: 400;
-    font-size: 19px;
-    color: var(--obs-muted);
-}
-
-.obs-footer-right {
-    display: flex;
-    align-items: center;
-    gap: 54px;
-}
-
-.obs-url {
-    font-weight: 600;
-    font-size: 19px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--obs-muted2);
-}
-
-.obs-total {
-    text-align: right;
-}
-
-.obs-total .n {
-    font-weight: 800;
-    font-size: 42px;
-    color: var(--obs-accent);
-    line-height: 1;
-}
-
-.obs-total .l {
-    font-weight: 500;
-    font-size: 16px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--obs-muted2);
-}
-
-.obs-soon .n {
-    font-size: 30px;
-}
-
-.obs-soon .l {
-    font-size: 15px;
-}
-
-/* ---- Between-rounds: bigger, cleaner founder names (#1) ---- */
+/* ---- Between-rounds: bigger, cleaner founder names ---- */
 .obs-stand-row .info .nm {
     font-weight: 800;
     font-size: 38px;
@@ -754,100 +640,4 @@ html, body {
     font-size: 19px;
     color: var(--obs-muted);
     margin-top: 4px;
-}
-
-/* ---- Footer horizontal scoreboard (#3) — replaces the URL / rounds block ---- */
-.obs-scoreline {
-    display: flex;
-    align-items: center;
-    gap: 28px;
-}
-
-.obs-scoreline .label {
-    font-weight: 600;
-    font-size: 13px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--obs-muted2);
-    writing-mode: horizontal-tb;
-}
-
-.obs-score-chip {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.obs-chip-av {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 22px;
-    color: #fff;
-    background: var(--ia-purple);
-    overflow: hidden;
-    border: 2px solid var(--obs-av-ring);
-    box-shadow: 0 0 0 2px var(--ia-purple);
-}
-
-.obs-score-chip.lead .obs-chip-av {
-    background: var(--ia-cyan);
-    box-shadow: 0 0 0 2px var(--ia-cyan);
-}
-
-.obs-chip-av img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.obs-chip-info {
-    line-height: 1;
-}
-
-.obs-chip-info .nm {
-    display: block;
-    font-weight: 600;
-    font-size: 16px;
-    color: var(--obs-muted);
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.obs-chip-info .pts {
-    font-weight: 800;
-    font-size: 34px;
-    color: var(--obs-accent);
-    margin-top: 4px;
-}
-
-.obs-score-chip.lead .obs-chip-info .pts {
-    color: var(--ia-cyan);
-}
-
-/* ---- Bigger QR on the intro screen (#4) ---- */
-.obs-footer.intro-footer {
-    flex-basis: 196px;
-}
-
-.obs-footer.intro-footer .obs-qr.big {
-    width: 150px;
-    height: 150px;
-    padding: 10px;
-}
-
-.obs-footer.intro-footer .obs-scan .big {
-    font-size: 32px;
-}
-
-.obs-footer.intro-footer .obs-scan .small {
-    font-size: 21px;
 }

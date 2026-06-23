@@ -43,11 +43,13 @@ class ObsController extends AbstractController
     public function index(Request $request): Response
     {
         $dark = 'innovate-dark' === $this->eventState->getTheme();
+        $voteUrl = $this->generateUrl('app_vote_live', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return $this->render('obs/index.html.twig', [
             'bg' => $this->resolveBg($request, $dark),
             'dark' => $dark,
             'screen' => $request->query->get('screen'),
+            'qr' => $this->qrService->generateQrCode($voteUrl),
         ]);
     }
 
@@ -75,11 +77,8 @@ class ObsController extends AbstractController
             $screen = 'intro';
         }
 
-        $qr = null;
-        if (null !== $active || \in_array($screen, ['intro', 'live'], true)) {
-            $url = $this->generateUrl('app_vote_live', [], UrlGeneratorInterface::ABSOLUTE_URL);
-            $qr = $this->qrService->generateQrCode($url);
-        }
+        $voteUrl = $this->generateUrl('app_vote_live', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        $qr = $this->qrService->generateQrCode($voteUrl);
 
         // Between-rounds recap: who took the last round, what's coming next.
         $roundStates = $this->buildRoundStates($active);

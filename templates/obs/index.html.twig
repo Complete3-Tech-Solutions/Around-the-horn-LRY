@@ -13,9 +13,11 @@
                 <div class="event">{{ event_config.title }}</div>
             </div>
         </div>
-        <div class="obs-live-badge soon" id="obs-live-badge">
-            <span class="dot"></span>
-            <span>Starting Soon</span>
+        <div class="obs-header-qr" id="obs-header-qr">
+            {% if qr %}
+                <div class="obs-qr"><img src="{{ qr }}" alt="Scan to vote"></div>
+            {% endif %}
+            <span class="obs-scan-label">Scan QR</span>
         </div>
     </header>
 
