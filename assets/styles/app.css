@@ -122,20 +122,6 @@ h4,
    a sticky live-action dock, and collapsible Settings / Danger zone so the
    moderator can run the show one-thumbed while talking on stage. */
 
-/* Sticky bottom dock: the live action (Open vote / Close round) stays under
-   the thumb without scrolling. Shown only while a round is on stage. */
-.admin-dock {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 40;
-    border-top: 2px solid var(--ia-blue);
-    background: hsl(var(--b1));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    box-shadow: 0 -12px 24px rgba(0, 0, 0, 0.15);
-}
-
 /* Collapsible <details> sections (Settings, Danger zone): hide the native
    marker and show a clear +/− affordance instead. */
 .admin-setup-summary {

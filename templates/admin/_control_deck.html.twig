@@ -23,7 +23,7 @@
     {% if nextUp is null and r.poll and not r.isActive and not r.isDecided %}{% set nextUp = r %}{% endif %}
 {% endfor %}
 
-<div class="admin-deck container mx-auto px-3 py-4 max-w-xl {% if onStage %}pb-44{% else %}pb-8{% endif %}">
+<div class="admin-deck container mx-auto px-3 py-4 max-w-xl pb-8">
 
     {% if not seeded %}
         <div class="alert alert-warning text-sm mb-6">
@@ -45,14 +45,14 @@
                         <span class="text-5xl font-display leading-none" style="font-weight:200;">{{ liveRound.votes }}</span>
                         <span class="text-sm ia-text-gray">votes in</span>
                     </div>
-                    <p class="text-sm ia-text-gray">When the debate’s done, tap <strong>Close round</strong> below.</p>
+                    <p class="text-sm ia-text-gray">When the debate’s done, tap <strong>Close round</strong> on Round {{ liveRound.number }} below.</p>
                 {% else %}
                     <div class="flex flex-wrap items-center gap-3">
                         <span class="badge badge-info badge-lg">On stage</span>
                         <span class="text-lg font-semibold">Round {{ liveRound.number }} of {{ totalRounds }}</span>
                     </div>
                     <p class="text-base leading-relaxed">{{ activePoll.votingPrompt }}</p>
-                    <p class="text-sm ia-text-gray">Audience can’t vote yet — tap <strong>Open vote</strong> below to start.</p>
+                    <p class="text-sm ia-text-gray">Audience can’t vote yet — tap <strong>Open vote</strong> on Round {{ liveRound.number }} below to start.</p>
                 {% endif %}
             {% elseif nextUp %}
                 <p class="text-xs uppercase tracking-wide ia-text-gray">Up next — Round {{ nextUp.number }} of {{ totalRounds }}</p>
@@ -107,7 +107,25 @@
                             </div>
                         </div>
 
-                        {% if r.poll and not r.isActive and not r.isDecided %}
+                        {# Live action stays right here on the active round's card —
+                           no separate dock popping up at the bottom. #}
+                        {% if r.isActive %}
+                            {% if r.isVotingOpen %}
+                                <form method="post" action="{{ path('app_admin_round_close', {'id': r.poll.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                    <button type="submit" class="btn btn-neutral btn-lg w-full min-h-16 text-xl">Close round</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{{ path('app_admin_round_open_vote', {'id': r.poll.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                    <button type="submit" class="btn btn-primary btn-lg w-full min-h-16 text-xl">Open vote</button>
+                                </form>
+                                <form method="post" action="{{ path('app_admin_round_close', {'id': r.poll.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                    <button type="submit" class="btn btn-ghost btn-sm w-full">Cancel preview</button>
+                                </form>
+                            {% endif %}
+                        {% elseif r.poll and not r.isDecided %}
                             <form method="post" action="{{ path('app_admin_round_activate', {'id': r.poll.id}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
                                 <button type="submit" class="btn btn-outline btn-primary w-full min-h-12">
@@ -217,29 +235,6 @@
         </div>
     </details>
 </div>
-
-{# Sticky dock — the live action, always under the thumb while on stage --- #}
-{% if onStage and liveRound and liveRound.poll %}
-<div class="admin-dock">
-    <div class="container mx-auto px-3 py-4 max-w-xl flex flex-col gap-3">
-        {% if liveRound.isVotingOpen %}
-            <form method="post" action="{{ path('app_admin_round_close', {'id': liveRound.poll.id}) }}">
-                <input type="hidden" name="_token" value="{{ csrf_token('round' ~ liveRound.poll.id) }}">
-                <button type="submit" class="btn btn-neutral btn-lg w-full min-h-16 text-xl">Close round {{ liveRound.number }}</button>
-            </form>
-        {% else %}
-            <form method="post" action="{{ path('app_admin_round_open_vote', {'id': liveRound.poll.id}) }}">
-                <input type="hidden" name="_token" value="{{ csrf_token('round' ~ liveRound.poll.id) }}">
-                <button type="submit" class="btn btn-primary btn-lg w-full min-h-16 text-xl">Open vote — Round {{ liveRound.number }}</button>
-            </form>
-            <form method="post" action="{{ path('app_admin_round_close', {'id': liveRound.poll.id}) }}">
-                <input type="hidden" name="_token" value="{{ csrf_token('round' ~ liveRound.poll.id) }}">
-                <button type="submit" class="btn btn-ghost btn-sm w-full">Cancel preview</button>
-            </form>
-        {% endif %}
-    </div>
-</div>
-{% endif %}
 
 {# Reset / new-game confirmation #}
 <dialog id="event_reset_modal" class="modal">
