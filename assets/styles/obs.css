@@ -434,13 +434,14 @@ html, body {
 
 /* On-stage preview (before voting opens) — three panels, photo + name with title below */
 .obs-body:has(.obs-stage-lineup) .obs-question {
-    margin-bottom: 44px;
+    margin-bottom: 80px;
 }
 
 .obs-stage-lineup {
     display: flex;
     gap: 28px;
     align-items: stretch;
+    margin-top: 12px;
 }
 
 .obs-stage-panel {
