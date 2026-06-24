@@ -51,6 +51,7 @@ class EventSetupCommand extends Command
             ->addArgument('admin-username', InputArgument::OPTIONAL, 'Admin username to create')
             ->addArgument('admin-password', InputArgument::OPTIONAL, 'Admin password')
             ->addOption('reset', null, InputOption::VALUE_NONE, 'Delete existing round polls and recreate them')
+            ->addOption('sync-metadata', null, InputOption::VALUE_NONE, 'Update round labels, questions and myths from EventConfig (keeps votes)')
         ;
     }
 
@@ -83,9 +84,23 @@ class EventSetupCommand extends Command
         $utc = new \DateTimeZone('UTC');
         $created = 0;
 
+        $syncMeta = (bool) $input->getOption('sync-metadata');
+        $synced = 0;
+
         foreach ($this->eventConfig->rounds() as $round) {
             if (isset($existing[$round['number']])) {
-                $io->writeln(sprintf(' • Round %d already exists — skipping.', $round['number']));
+                if ($syncMeta) {
+                    $poll = $existing[$round['number']];
+                    $poll
+                        ->setRoundLabel($round['label'])
+                        ->setTitle($round['title'])
+                        ->setRoundQuestion($round['question'])
+                        ->setMyths($round['myths']);
+                    ++$synced;
+                    $io->writeln(sprintf(' • Round %d metadata synced from seed.', $round['number']));
+                } else {
+                    $io->writeln(sprintf(' • Round %d already exists — skipping.', $round['number']));
+                }
                 continue;
             }
 
@@ -115,7 +130,14 @@ class EventSetupCommand extends Command
         $this->entityManager->flush();
         // Keep every round's ballot in lockstep with the roster (count + names).
         $this->founderService->syncRoundBallots();
-        $io->success(sprintf('%d round(s) created. Rounds are drafts — activate, edit, add or reset them from /admin.', $created));
+        if ($synced > 0) {
+            $io->success(sprintf('%d round(s) metadata synced. Edit copy any time at /admin.', $synced));
+        }
+        if ($created > 0) {
+            $io->success(sprintf('%d round(s) created. Rounds are drafts — activate, edit, add or reset them from /admin.', $created));
+        } elseif (0 === $synced) {
+            $io->note('Nothing to do — all rounds exist. Pass --sync-metadata to refresh labels/questions/myths from the seed.');
+        }
 
         $username = $input->getArgument('admin-username');
         $password = $input->getArgument('admin-password');

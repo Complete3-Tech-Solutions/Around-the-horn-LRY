@@ -285,6 +285,63 @@ html, body {
     margin-bottom: 54px;
 }
 
+/* Mythbusters round — debate title, myth lines, then the vote question. */
+.obs-body .round-prompt {
+    max-width: 1640px;
+    margin-bottom: 48px;
+}
+
+.obs-body .round-prompt-label {
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--ia-cyan);
+    margin-bottom: 16px;
+}
+
+.obs-body .round-prompt-title {
+    font-weight: 800;
+    font-size: 72px;
+    line-height: 1.05;
+    letter-spacing: -1px;
+    color: var(--obs-accent);
+    margin: 0 0 28px;
+}
+
+.obs-body .round-prompt-title--solo {
+    font-size: 78px;
+    margin-bottom: 54px;
+}
+
+.obs-body .round-prompt-myths {
+    list-style: none;
+    margin: 0 0 32px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.obs-body .round-prompt-myths li {
+    font-weight: 600;
+    font-size: 36px;
+    line-height: 1.25;
+    color: var(--obs-text);
+    padding: 18px 24px;
+    border-left: 6px solid var(--ia-cyan);
+    background: var(--obs-chip);
+    border-radius: 0 12px 12px 0;
+}
+
+.obs-body .round-prompt-ask {
+    font-weight: 800;
+    font-size: 44px;
+    line-height: 1.15;
+    color: var(--obs-accent);
+    margin: 0;
+}
+
 /* Vote rows */
 .obs-rows {
     display: flex;

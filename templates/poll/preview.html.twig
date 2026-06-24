@@ -22,7 +22,7 @@
 
     <div class="min-h-screen bg-base-100">
         <div class="container mx-auto px-3 max-w-xl pt-5 pb-12">
-            <h1 class="text-2xl sm:text-3xl font-display leading-tight mb-3" style="font-weight:200;">{{ poll.votingPrompt }}</h1>
+            {% include 'components/_round_prompt.html.twig' with { round: round, poll: poll } %}
             <p class="text-sm ia-text-gray mb-6 flex items-center gap-2">
                 <span class="loading loading-dots loading-xs ia-text-cyan"></span>
                 Vote here when voting opens

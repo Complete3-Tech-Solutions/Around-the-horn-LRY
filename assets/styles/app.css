@@ -117,6 +117,56 @@ h4,
 }
 .ia-header-band .ia-text-gray { color: rgba(255, 255, 255, 0.7) !important; }
 
+/* Mythbusters round copy on audience phones. */
+.ia-stage .round-prompt-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ia-cyan);
+    margin-bottom: 8px;
+}
+
+.ia-stage .round-prompt-title {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    font-weight: 700;
+    margin: 0 0 1rem;
+}
+
+@media (min-width: 640px) {
+    .ia-stage .round-prompt-title { font-size: 1.875rem; }
+}
+
+.ia-stage .round-prompt-title--solo {
+    margin-bottom: 1.5rem;
+}
+
+.ia-stage .round-prompt-myths {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.ia-stage .round-prompt-myths li {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    padding: 0.65rem 0.75rem;
+    border-left: 3px solid var(--ia-cyan);
+    background: color-mix(in srgb, var(--ia-cyan) 8%, hsl(var(--b1)));
+}
+
+.ia-stage .round-prompt-ask {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin: 0 0 1.5rem;
+    color: hsl(var(--bc));
+}
+
 /* =========================================================================
    Moderator control deck (/admin) — phone-first cockpit. Big tap targets,
    a sticky live-action dock, and collapsible Settings / Danger zone so the
