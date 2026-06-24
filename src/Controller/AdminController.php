@@ -31,34 +31,64 @@ class AdminController extends AbstractController
         $polls = $this->pollRepository->findLatest(10);
         $stage = $this->pollService->getStagePoll();
 
-        // The rounds are now DB-driven (moderator can add/edit/delete them),
-        // so enumerate the round polls directly rather than the config seed.
-        $roundPolls = $this->scoreboard->roundPolls();
+        return $this->render('admin/index.html.twig', [
+            'polls' => $polls,
+            'controlRounds' => $this->controlRounds($stage),
+            'activePoll' => $stage,
+            'standings' => $this->scoreboard->standings(),
+            'eventScreen' => $this->eventState->getScreen(),
+            'seeded' => \count($this->scoreboard->roundPolls()) > 0,
+        ]);
+    }
 
-        $controlRounds = [];
-        foreach ($roundPolls as $poll) {
+    /**
+     * Live deck fragment — polled by the moderator's control deck every couple
+     * of seconds while a round is on stage, so vote counts and the round's
+     * voting state (warmup → open → window ended) update without a manual
+     * refresh. Returns only the dynamic status card + rounds list.
+     */
+    #[Route('/_live', name: 'deck_live')]
+    public function deckLive(): Response
+    {
+        $stage = $this->pollService->getStagePoll();
+
+        return $this->render('admin/_control_live.html.twig', [
+            'controlRounds' => $this->controlRounds($stage),
+            'activePoll' => $stage,
+            'standings' => $this->scoreboard->standings(),
+            'eventScreen' => $this->eventState->getScreen(),
+        ]);
+    }
+
+    /**
+     * Build the per-round view rows for the control deck. Shared by the full
+     * page and the live-poll fragment so both show identical state.
+     *
+     * @return list<array<string,mixed>>
+     */
+    private function controlRounds(?Poll $stage): array
+    {
+        // The rounds are DB-driven (moderator can add/edit/delete them), so
+        // enumerate the round polls directly rather than the config seed.
+        $rows = [];
+        foreach ($this->scoreboard->roundPolls() as $poll) {
             $meta = $poll->getRoundMeta();
             $onStage = null !== $stage && $poll->getId() === $stage->getId();
-            $controlRounds[] = [
+            $rows[] = [
                 'number' => $meta['number'],
                 'label' => $meta['label'],
                 'title' => $meta['title'],
                 'poll' => $poll,
                 'isActive' => $onStage,
-                'isVotingOpen' => $onStage && $stage->isVotingOpen(),
+                'isVotingOpen' => $onStage && $poll->isVotingOpen(),
+                'isVotingScheduled' => $onStage && $poll->isVotingScheduled(),
+                'hasVotingStarted' => $onStage && $poll->hasVotingStarted(),
                 'isDecided' => $this->scoreboard->isRoundDecided($poll, $stage),
                 'votes' => $poll->getTotalVotes(),
             ];
         }
 
-        return $this->render('admin/index.html.twig', [
-            'polls' => $polls,
-            'controlRounds' => $controlRounds,
-            'activePoll' => $stage,
-            'standings' => $this->scoreboard->standings(),
-            'eventScreen' => $this->eventState->getScreen(),
-            'seeded' => \count($roundPolls) > 0,
-        ]);
+        return $rows;
     }
 
     #[Route('/show/{id}', name: 'show')]

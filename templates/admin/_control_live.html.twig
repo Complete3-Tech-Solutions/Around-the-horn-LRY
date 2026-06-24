@@ -1,0 +1,157 @@
+{# Live region of the moderator deck — the status card + rounds list.
+   Polled by HTMX every 2s WHILE a round is on stage (see the hx-* attrs on
+   #deck-live) so vote counts and the voting state (warmup → open → ended)
+   update without the moderator refreshing. Self-contained: derives everything
+   from controlRounds + activePoll so both the full page and the /admin/_live
+   fragment render it identically. #}
+{% set controlRounds = controlRounds|default([]) %}
+{% set standings = standings|default([]) %}
+{% set eventScreen = eventScreen|default('auto') %}
+{% set onStage = activePoll is not null %}
+{% set totalRounds = controlRounds|length %}
+
+{% set liveRound = null %}
+{% set nextUp = null %}
+{% for r in controlRounds %}
+    {% if r.isActive %}{% set liveRound = r %}{% endif %}
+    {% if nextUp is null and r.poll and not r.isActive and not r.isDecided %}{% set nextUp = r %}{% endif %}
+{% endfor %}
+
+<div id="deck-live"{% if onStage %} hx-get="{{ path('app_admin_deck_live') }}" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
+
+    {# NOW — the single most important thing on screen ---------------------- #}
+    <section class="card bg-base-200 border-2 mb-6" style="border-color: var(--ia-blue);">
+        <div class="card-body p-5 gap-4">
+            {% if onStage and liveRound %}
+                {% if liveRound.isVotingOpen %}
+                    <div class="flex flex-wrap items-center gap-3">
+                        <span class="badge badge-success badge-lg gap-2"><span class="ia-live-dot"></span>Voting open</span>
+                        <span class="text-lg font-semibold">Round {{ liveRound.number }} of {{ totalRounds }}</span>
+                    </div>
+                    <p class="text-base leading-relaxed">{{ activePoll.votingPrompt }}</p>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-5xl font-display leading-none" style="font-weight:200;">{{ liveRound.votes }}</span>
+                        <span class="text-sm ia-text-gray">votes in</span>
+                    </div>
+                    <p class="text-sm ia-text-gray">When the debate’s done, tap <strong>Close round</strong> on Round {{ liveRound.number }} below.</p>
+                {% elseif liveRound.isVotingScheduled %}
+                    <div class="flex flex-wrap items-center gap-3">
+                        <span class="badge badge-warning badge-lg gap-2"><span class="ia-live-dot"></span>Opening…</span>
+                        <span class="text-lg font-semibold">Round {{ liveRound.number }} of {{ totalRounds }}</span>
+                    </div>
+                    <p class="text-base leading-relaxed">{{ activePoll.votingPrompt }}</p>
+                    <p class="text-sm ia-text-gray">Voting opens on the audience phones in a moment — this updates on its own.</p>
+                {% elseif liveRound.hasVotingStarted %}
+                    <div class="flex flex-wrap items-center gap-3">
+                        <span class="badge badge-neutral badge-lg">Voting ended</span>
+                        <span class="text-lg font-semibold">Round {{ liveRound.number }} of {{ totalRounds }}</span>
+                    </div>
+                    <p class="text-base leading-relaxed">{{ activePoll.votingPrompt }}</p>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-5xl font-display leading-none" style="font-weight:200;">{{ liveRound.votes }}</span>
+                        <span class="text-sm ia-text-gray">votes in</span>
+                    </div>
+                    <p class="text-sm ia-text-gray">Tap <strong>Close round</strong> below to score it — or <strong>Reopen voting</strong> for another pass.</p>
+                {% else %}
+                    <div class="flex flex-wrap items-center gap-3">
+                        <span class="badge badge-info badge-lg">On stage</span>
+                        <span class="text-lg font-semibold">Round {{ liveRound.number }} of {{ totalRounds }}</span>
+                    </div>
+                    <p class="text-base leading-relaxed">{{ activePoll.votingPrompt }}</p>
+                    <p class="text-sm ia-text-gray">Audience can’t vote yet — tap <strong>Open vote</strong> on Round {{ liveRound.number }} below to start.</p>
+                {% endif %}
+            {% elseif nextUp %}
+                <p class="text-xs uppercase tracking-wide ia-text-gray">Up next — Round {{ nextUp.number }} of {{ totalRounds }}</p>
+                <p class="text-xl font-semibold leading-tight">{{ nextUp.label }}</p>
+                {% if nextUp.title %}<p class="text-sm ia-text-gray leading-relaxed">{{ nextUp.title }}</p>{% endif %}
+                <form method="post" action="{{ path('app_admin_round_activate', {'id': nextUp.poll.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('round' ~ nextUp.poll.id) }}">
+                    <button type="submit" class="btn btn-primary btn-lg w-full min-h-16 text-xl">Go LIVE — Round {{ nextUp.number }}</button>
+                </form>
+            {% else %}
+                <p class="text-xl font-semibold">All rounds complete 🎉</p>
+                <p class="text-sm ia-text-gray">Reveal the winner on the big screen.</p>
+                <form method="post" action="{{ path('app_admin_event_screen', {'screen': 'winner'}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('event_screen') }}">
+                    <button type="submit" class="btn btn-primary btn-lg w-full min-h-16 text-xl">Reveal winner</button>
+                </form>
+            {% endif %}
+
+            <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm pt-3 border-t border-base-300">
+                <div><span class="ia-text-gray">Big screen:</span> <strong class="uppercase">{{ eventScreen }}</strong></div>
+                {% if standings|length > 0 %}
+                    <div class="flex flex-wrap gap-2">
+                        <span class="ia-text-gray">Score</span>
+                        {% for s in standings %}
+                            <strong>{{ s.founder.initials }} {{ s.points }}</strong>{% if not loop.last %}<span class="ia-text-gray">·</span>{% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    {# Rounds — quick status + the live action on the active card --------- #}
+    <section class="mb-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wide mb-4">Rounds</h2>
+        <div class="flex flex-col gap-3">
+            {% for r in controlRounds %}
+                <div class="card bg-base-100 border-2 {% if r.isActive %}border-primary{% else %}border-base-300{% endif %}">
+                    <div class="card-body p-4 gap-3">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl font-display w-10 text-center shrink-0" style="font-weight:200;">{{ r.number }}</div>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-base font-semibold leading-tight">{{ r.label }}</div>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    {% if r.isVotingOpen %}<span class="badge badge-success">Voting</span>
+                                    {% elseif r.isVotingScheduled %}<span class="badge badge-warning">Opening…</span>
+                                    {% elseif r.hasVotingStarted %}<span class="badge badge-neutral">Voting ended</span>
+                                    {% elseif r.isActive %}<span class="badge badge-info">On stage</span>
+                                    {% elseif r.isDecided %}<span class="badge badge-neutral">Closed</span>
+                                    {% elseif r.poll %}<span class="badge badge-ghost">Ready</span>
+                                    {% else %}<span class="badge badge-warning">Not seeded</span>{% endif %}
+                                    {% if r.poll %}<span class="badge badge-outline">{{ r.votes }} votes</span>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {# The live action stays right here on the active round's card. #}
+                        {% if r.isActive %}
+                            {% if r.isVotingOpen or r.isVotingScheduled %}
+                                <form method="post" action="{{ path('app_admin_round_close', {'id': r.poll.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                    <button type="submit" class="btn btn-neutral btn-lg w-full min-h-16 text-xl">Close round</button>
+                                </form>
+                            {% elseif r.hasVotingStarted %}
+                                <form method="post" action="{{ path('app_admin_round_close', {'id': r.poll.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                    <button type="submit" class="btn btn-neutral btn-lg w-full min-h-16 text-xl">Close round</button>
+                                </form>
+                                <form method="post" action="{{ path('app_admin_round_open_vote', {'id': r.poll.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                    <button type="submit" class="btn btn-outline btn-primary w-full min-h-12">Reopen voting</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{{ path('app_admin_round_open_vote', {'id': r.poll.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                    <button type="submit" class="btn btn-primary btn-lg w-full min-h-16 text-xl">Open vote</button>
+                                </form>
+                                <form method="post" action="{{ path('app_admin_round_close', {'id': r.poll.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                    <button type="submit" class="btn btn-ghost btn-sm w-full">Cancel preview</button>
+                                </form>
+                            {% endif %}
+                        {% elseif r.poll and not r.isDecided %}
+                            <form method="post" action="{{ path('app_admin_round_activate', {'id': r.poll.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('round' ~ r.poll.id) }}">
+                                <button type="submit" class="btn btn-outline btn-primary w-full min-h-12">
+                                    {% if onStage %}Switch to this round{% else %}Go LIVE{% endif %}
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
