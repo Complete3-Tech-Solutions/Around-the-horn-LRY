@@ -23,9 +23,11 @@
     </div>
 
 {% elseif screen == 'live' and activePoll %}
-    <div class="obs-body"{% if votingPhase|default(false) %} x-data="voteTimer('{{ activePoll.startAt|date('Y-m-d\\TH:i:s\\Z') }}', '{{ activePoll.endAt|date('Y-m-d\\TH:i:s\\Z') }}')"{% endif %}>
+    {% set myths = round ? round.myths|default([]) : [] %}
+    {% set hasMyths = myths|length > 0 %}
+    <div class="obs-body{% if hasMyths %} obs-body--myths{% endif %}"{% if votingPhase|default(false) %} x-data="voteTimer('{{ activePoll.startAt|date('Y-m-d\\TH:i:s\\Z') }}', '{{ activePoll.endAt|date('Y-m-d\\TH:i:s\\Z') }}')"{% endif %}>
         <div class="obs-round">
-            <span class="pill">{{ round ? round.key : 'Live vote' }}</span>
+            <span class="pill">{{ round and round.label ? round.label : (round ? round.key : 'Live vote') }}</span>
             {% if votingPhase|default(false) %}
                 <div class="obs-vote-timer" :class="{ warn: isWarn, waiting: waiting, expired: isExpired }">
                     <span class="n" x-text="display">--:--</span>
@@ -33,12 +35,19 @@
                 </div>
             {% endif %}
         </div>
-        <h1 class="obs-question">{{ activePoll.votingPrompt }}</h1>
+        {% if hasMyths %}
+            <h1 class="obs-question">{{ round.title }}</h1>
+            {% include 'components/_myths_list.html.twig' with { myths: myths } %}
+            <p class="obs-myth-vote">{{ activePoll.votingPrompt }}</p>
+        {% else %}
+            <h1 class="obs-question">{{ activePoll.votingPrompt }}</h1>
+        {% endif %}
         {% if votingPhase|default(false) %}
-        <div class="obs-rows">
+        <div class="obs-rows{% if hasMyths %} obs-rows--myths{% endif %}">
             {% for row in liveResults %}
                 {% set isLeader = row.isLeader and activePoll.totalVotes > 0 %}
                 <div class="obs-row {{ isLeader ? 'lead' : '' }}">
+                    {% if not hasMyths %}
                     <div class="obs-who">
                         <div class="obs-av"><img src="{{ row.founder.headshot }}" alt="{{ row.founder.name }}"></div>
                         <div>
@@ -46,6 +55,11 @@
                             <div class="rl">{{ row.founder.sector }}</div>
                         </div>
                     </div>
+                    {% else %}
+                    <div class="obs-who obs-who--name-only">
+                        <div class="nm">{{ row.founder.name }}</div>
+                    </div>
+                    {% endif %}
                     <div class="obs-meter">
                         <div class="obs-track">
                             <div class="obs-fill" style="width: {{ row.pct }}%;"></div>
@@ -58,7 +72,7 @@
                 </div>
             {% endfor %}
         </div>
-        {% else %}
+        {% elseif not hasMyths %}
         <div class="obs-stage-lineup">
             {% for f in founders %}
                 <div class="obs-stage-panel">

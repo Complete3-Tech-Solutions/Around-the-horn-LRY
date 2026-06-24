@@ -285,6 +285,66 @@ html, body {
     margin-bottom: 54px;
 }
 
+.obs-body--myths .obs-question {
+    margin-bottom: 36px;
+}
+
+.obs-myth-vote {
+    font-weight: 800;
+    font-size: 48px;
+    line-height: 1.12;
+    color: var(--obs-accent);
+    max-width: 1640px;
+    margin: 0 0 40px;
+}
+
+.myths-list--obs {
+    list-style: none;
+    margin: 0 0 32px;
+    padding: 0;
+    max-width: 1640px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.myths-list--obs .myths-list-item {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    padding: 20px 28px;
+    background: var(--obs-chip);
+    border-left: 6px solid var(--ia-cyan);
+    border-radius: 0 12px 12px 0;
+}
+
+.myths-list--obs .myths-list-num {
+    flex-shrink: 0;
+    font-weight: 800;
+    font-size: 44px;
+    line-height: 1;
+    color: var(--ia-cyan);
+    min-width: 1.1em;
+}
+
+.myths-list--obs .myths-list-text {
+    font-weight: 600;
+    font-size: 40px;
+    line-height: 1.2;
+    color: var(--obs-text);
+}
+
+.obs-rows--myths .obs-who--name-only {
+    flex: 0 0 320px;
+}
+
+.obs-rows--myths .obs-who--name-only .nm {
+    font-weight: 800;
+    font-size: 36px;
+    line-height: 1.1;
+    color: var(--obs-accent);
+}
+
 /* Vote rows */
 .obs-rows {
     display: flex;

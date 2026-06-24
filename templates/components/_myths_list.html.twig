@@ -1,0 +1,12 @@
+{# Numbered myth lines — shown on OBS + phones when a round has myths set. #}
+{% set myths = myths|default([]) %}
+{% if myths|length > 0 %}
+    <ol class="myths-list {{ variant|default('obs') == 'phone' ? 'myths-list--phone' : 'myths-list--obs' }}">
+        {% for myth in myths %}
+            <li class="myths-list-item">
+                <span class="myths-list-num">{{ loop.index }}</span>
+                <span class="myths-list-text">{{ myth }}</span>
+            </li>
+        {% endfor %}
+    </ol>
+{% endif %}

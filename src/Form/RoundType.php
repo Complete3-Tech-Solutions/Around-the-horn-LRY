@@ -38,10 +38,11 @@ class RoundType extends AbstractType
                 'required' => false,
             ])
             ->add('myths', TextareaType::class, [
-                'label' => 'Mythbusters — one per line (optional)',
+                'label' => 'Myth list — one per line (optional)',
                 'required' => false,
                 'mapped' => false,
-                'attr' => ['rows' => 4],
+                'help' => 'When set, the big screen shows a numbered list instead of founder photos. One myth per line.',
+                'attr' => ['rows' => 5, 'placeholder' => "1. Agriculture is outdated.\n2. Manufacturing can't scale.\n…or just one myth per line without numbers"],
             ])
         ;
 
@@ -62,7 +63,11 @@ class RoundType extends AbstractType
                 return;
             }
             $raw = (string) $form->get('myths')->getData();
-            $lines = array_values(array_filter(array_map('trim', explode("\n", $raw)), static fn (string $l): bool => '' !== $l));
+            $lines = array_values(array_filter(array_map(static function (string $line): string {
+                $line = trim($line);
+
+                return (string) preg_replace('/^\d+\.\s*/', '', $line);
+            }, explode("\n", $raw)), static fn (string $l): bool => '' !== $l));
             $poll->setMyths($lines);
         });
     }

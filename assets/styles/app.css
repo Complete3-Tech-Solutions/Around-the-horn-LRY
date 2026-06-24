@@ -117,6 +117,38 @@ h4,
 }
 .ia-header-band .ia-text-gray { color: rgba(255, 255, 255, 0.7) !important; }
 
+.myths-list--phone {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.myths-list--phone .myths-list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-left: 3px solid var(--ia-cyan);
+    background: color-mix(in srgb, var(--ia-cyan) 8%, hsl(var(--b1)));
+}
+
+.myths-list--phone .myths-list-num {
+    flex-shrink: 0;
+    font-weight: 800;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: var(--ia-cyan);
+    min-width: 1.25em;
+}
+
+.myths-list--phone .myths-list-text {
+    font-size: 0.95rem;
+    line-height: 1.35;
+}
+
 /* =========================================================================
    Moderator control deck (/admin) — phone-first cockpit. Big tap targets,
    a sticky live-action dock, and collapsible Settings / Danger zone so the
