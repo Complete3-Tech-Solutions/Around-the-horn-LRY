@@ -41,20 +41,9 @@
                 </div>
             </div>
 
-            {% set myths = round ? round.myths|default([]) : [] %}
-            {% set hasMyths = myths|length > 0 %}
-            {% if hasMyths %}
-                {% include 'components/_myth_round_header.html.twig' with {
-                    myths: myths,
-                    title: round.title,
-                    roundQuestion: poll.roundQuestion,
-                    votingPrompt: poll.votingPrompt,
-                } %}
-            {% else %}
-                <h1 class="text-2xl sm:text-3xl font-display leading-tight mb-6" style="font-weight:200;">{{ poll.votingPrompt }}</h1>
-            {% endif %}
+            <h1 class="text-2xl sm:text-3xl font-display leading-tight mb-6" style="font-weight:200;">{{ poll.votingPrompt }}</h1>
 
-            {# Ballot — one tap to choose; on myth rounds the wall shows myths, not headshots #}
+            {# Ballot — myths stay on the LED wall only; phones show the usual question + founders #}
             {{ form_start(form) }}
             <div class="flex flex-col gap-3">
                 {% for choice in form.choice %}
@@ -67,13 +56,13 @@
                            reach it — bind on `selected` instead so the checkmark reliably shows. #}
                         <div class="flex items-center gap-3 p-3 border-2 transition-colors"
                              :class="selected === {{ choice.vars.value }} ? 'border-primary bg-primary/10' : 'border-base-300 hover:border-primary/60'">
-                            {% if founder and not hasMyths %}
+                            {% if founder %}
                                 <img src="{{ founder.headshot }}" alt="{{ founder.name }}"
                                      class="w-14 h-14 shrink-0 border-2 border-base-300 bg-base-200 object-cover">
                             {% endif %}
                             <div class="min-w-0 grow">
                                 <div class="text-lg font-medium leading-tight">{{ choice.vars.label }}</div>
-                                {% if founder and not hasMyths %}
+                                {% if founder %}
                                     <div class="text-[11px] uppercase tracking-[0.14em] ia-text-gray mt-1">{{ founder.sector }}</div>
                                 {% endif %}
                             </div>
