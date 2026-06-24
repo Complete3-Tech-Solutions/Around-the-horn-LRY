@@ -33,11 +33,8 @@ class AdminController extends AbstractController
 
         return $this->render('admin/index.html.twig', [
             'polls' => $polls,
-            'controlRounds' => $this->controlRounds($stage),
-            'activePoll' => $stage,
-            'standings' => $this->scoreboard->standings(),
-            'eventScreen' => $this->eventState->getScreen(),
             'seeded' => \count($this->scoreboard->roundPolls()) > 0,
+            ...$this->deckViewData($stage),
         ]);
     }
 
@@ -45,19 +42,42 @@ class AdminController extends AbstractController
      * Live deck fragment — polled by the moderator's control deck every couple
      * of seconds while a round is on stage, so vote counts and the round's
      * voting state (warmup → open → window ended) update without a manual
-     * refresh. Returns only the dynamic status card + rounds list.
+     * refresh.
      */
     #[Route('/_live', name: 'deck_live')]
     public function deckLive(): Response
     {
         $stage = $this->pollService->getStagePoll();
 
-        return $this->render('admin/_control_live.html.twig', [
-            'controlRounds' => $this->controlRounds($stage),
+        return $this->render('admin/_control_live.html.twig', $this->deckViewData($stage));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function deckViewData(?Poll $stage): array
+    {
+        $controlRounds = $this->controlRounds($stage);
+        $liveRound = null;
+        $nextUp = null;
+        foreach ($controlRounds as $row) {
+            if ($row['isActive']) {
+                $liveRound = $row;
+            }
+            if (null === $nextUp && null !== $row['poll'] && !$row['isActive'] && !$row['isDecided']) {
+                $nextUp = $row;
+            }
+        }
+
+        return [
+            'controlRounds' => $controlRounds,
             'activePoll' => $stage,
+            'liveRound' => $liveRound,
+            'nextUp' => $nextUp,
+            'totalRounds' => \count($controlRounds),
             'standings' => $this->scoreboard->standings(),
             'eventScreen' => $this->eventState->getScreen(),
-        ]);
+        ];
     }
 
     /**

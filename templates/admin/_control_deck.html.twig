@@ -18,32 +18,9 @@
         </div>
     {% endif %}
 
-    {# Live region (status card + rounds). Self-refreshes via HTMX while a
-       round is on stage — see admin/_control_live.html.twig. #}
+    {# Live region (on-stage box, big screen, rounds). Self-refreshes via HTMX
+       while a round is on stage — see admin/_control_live.html.twig. #}
     {{ include('admin/_control_live.html.twig') }}
-
-    {# Big screen — used live at the end, kept reachable ------------------- #}
-    <section class="card bg-base-100 border-2 border-base-300 mb-8">
-        <div class="card-body p-5 gap-4">
-            <h2 class="text-sm font-semibold uppercase tracking-wide">Big screen</h2>
-            <div class="flex flex-col gap-3">
-                <form method="post" action="{{ path('app_admin_event_screen', {'screen': 'winner'}) }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('event_screen') }}">
-                    <button type="submit" class="btn btn-neutral btn-lg w-full min-h-14">Reveal winner</button>
-                </form>
-                <div class="grid grid-cols-2 gap-3">
-                    <form method="post" action="{{ path('app_admin_event_screen', {'screen': 'auto'}) }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('event_screen') }}">
-                        <button type="submit" class="btn btn-outline btn-lg w-full min-h-14">Resume live</button>
-                    </form>
-                    <form method="post" action="{{ path('app_admin_event_screen', {'screen': 'intro'}) }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('event_screen') }}">
-                        <button type="submit" class="btn btn-outline btn-lg w-full min-h-14">Intro screen</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
 
     {# ===================================================================== #}
     {# Below here is pre/post-show only — sent down + collapsed.             #}
