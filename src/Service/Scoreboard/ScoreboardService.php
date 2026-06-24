@@ -10,16 +10,16 @@ use App\Repository\PollRepository;
 use App\Service\Poll\PollService;
 
 /**
- * Lightweight cumulative tally across the four "Around the Horn" round polls.
+ * Lightweight cumulative tally across the "Around the Horn" round polls.
  *
  * OpenStreamPoll only models single, independent polls. This service stitches
  * the round polls together: it maps each poll's choice index to a founder (via
  * the fixed ballot order in EventConfig) and awards the round winner a point.
  *
- * Scoring rule (matches the client review reference): a round is "decided" once
- * it is no longer the live/active poll and has at least one vote; the founder(s)
- * with the most votes in that round each earn one point. The active round is
- * shown live but not yet scored, so standings never flip mid-vote.
+ * Scoring rule: a round is "decided" once it is no longer the live/active poll
+ * and has at least one vote; the founder(s) with the most votes in that round
+ * each earn one point (rounds won — not cumulative raw vote totals). The active
+ * round is shown live but not yet scored, so standings never flip mid-vote.
  */
 class ScoreboardService
 {
@@ -94,8 +94,8 @@ class ScoreboardService
     }
 
     /**
-     * Cumulative standings across decided rounds, sorted by points (ties keep
-     * ballot order thanks to PHP 8 stable sort).
+     * Cumulative standings across decided rounds (points = rounds won), sorted
+     * by points (ties keep ballot order thanks to PHP 8 stable sort).
      *
      * @return list<array{founder:array,points:int,wins:list<int>}>
      */
@@ -172,10 +172,10 @@ class ScoreboardService
     }
 
     /**
-     * Overall audience champion from the standings (null until at least one
-     * round has been decided).
+     * Overall audience champion(s) from the standings (null until at least one
+     * round has been decided). Points = rounds won, not raw vote totals.
      *
-     * @return array{founder:array,points:int,tie:bool}|null
+     * @return array{founders:list<array>,points:int,tie:bool}|null
      */
     public function champion(): ?array
     {
@@ -189,12 +189,20 @@ class ScoreboardService
             return null;
         }
 
-        $tie = isset($standings[1]) && $standings[1]['points'] === $top['points'];
+        $topPoints = $top['points'];
+        $founders = [];
+        foreach ($standings as $row) {
+            if ($row['points'] === $topPoints) {
+                $founders[] = $row['founder'];
+            } else {
+                break;
+            }
+        }
 
         return [
-            'founder' => $top['founder'],
-            'points' => $top['points'],
-            'tie' => $tie,
+            'founders' => $founders,
+            'points' => $topPoints,
+            'tie' => \count($founders) > 1,
         ];
     }
 

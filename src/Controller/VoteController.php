@@ -163,7 +163,7 @@ class VoteController extends AbstractController
      * briefly because every idle phone re-polls /vote every few seconds — the
      * tally must not run per request (matters at ~150 phones).
      *
-     * @return array{standings:list<array{founder:array,points:int,wins:list<int>}>,decided_rounds:list<int>,champion:?array{founder:array,points:int,tie:bool}}
+     * @return array{standings:list<array{founder:array,points:int,wins:list<int>}>,decided_rounds:list<int>,champion:?array{founders:list<array>,points:int,tie:bool}}
      */
     private function board(): array
     {
@@ -179,17 +179,11 @@ class VoteController extends AbstractController
             $decidedRounds = array_values(array_unique($decidedRounds));
             sort($decidedRounds);
 
-            $champion = null;
-            if ([] !== $standings && $standings[0]['points'] > 0) {
-                $top = $standings[0];
-                $champion = [
-                    'founder' => $top['founder'],
-                    'points' => $top['points'],
-                    'tie' => isset($standings[1]) && $standings[1]['points'] === $top['points'],
-                ];
-            }
-
-            return ['standings' => $standings, 'decided_rounds' => $decidedRounds, 'champion' => $champion];
+            return [
+                'standings' => $standings,
+                'decided_rounds' => $decidedRounds,
+                'champion' => $this->scoreboard->champion(),
+            ];
         });
     }
 }

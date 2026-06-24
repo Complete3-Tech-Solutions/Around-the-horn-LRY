@@ -93,7 +93,7 @@
                 <div><span class="ia-text-gray">Big screen:</span> <strong class="uppercase">{{ eventScreen }}</strong></div>
                 {% if standings|length > 0 %}
                     <div class="flex flex-wrap gap-2">
-                        <span class="ia-text-gray">Score</span>
+                        <span class="ia-text-gray">Rounds won</span>
                         {% for s in standings %}
                             <strong>{{ s.founder.initials }} {{ s.points }}</strong>{% if not loop.last %}<span class="ia-text-gray">·</span>{% endif %}
                         {% endfor %}

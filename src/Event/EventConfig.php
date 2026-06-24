@@ -26,7 +26,7 @@ final class EventConfig
 {
     public const EVENT_TITLE = 'Around the Horn';
     public const EVENT_SUBTITLE = 'Innovate Alabama · Sloss Tech';
-    public const EVENT_TAGLINE = 'Four participants. Five rounds. You score it. The winner\'s charity gets the donation.';
+    public const EVENT_TAGLINE = 'Four participants. Five rounds. You score it.';
 
     public function __construct(
         private readonly FounderRepository $founderRepository,

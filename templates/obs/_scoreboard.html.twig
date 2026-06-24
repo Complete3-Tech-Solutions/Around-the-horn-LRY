@@ -2,6 +2,7 @@
    screens). Expects `standings` in context. #}
 <div class="obs-score">
     <h3>Live Scoreboard</h3>
+    <p class="obs-score-note">Rounds won — not total votes</p>
     {% set topPoints = standings|length > 0 ? standings[0].points : 0 %}
     {% for row in standings %}
         <div class="obs-srow {{ row.points == topPoints and topPoints > 0 ? 'lead' : '' }}">
@@ -11,11 +12,7 @@
                 <div class="obs-sname">{{ row.founder.name }}</div>
                 <div class="obs-ssector">{{ row.founder.sector }}</div>
             </div>
-            <div class="obs-spts">{{ row.points }}</div>
+            <div class="obs-spts" title="Rounds won">{{ row.points }}</div>
         </div>
     {% endfor %}
-    <div class="obs-charity">
-        Round winners take the points — the champion's <b>charity of choice</b>
-        gets the Innovate Alabama donation.
-    </div>
 </div>
