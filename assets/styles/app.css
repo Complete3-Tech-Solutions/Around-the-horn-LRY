@@ -115,6 +115,29 @@ h4,
     color: #fff;
     border-bottom: 4px solid var(--ia-cyan);
 }
+.vote-credit {
+    text-align: center;
+    padding: 1rem 0.75rem 1.25rem;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: hsl(var(--bc) / 0.45);
+}
+
+.vote-credit a {
+    color: var(--ia-cyan);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.vote-credit a:hover {
+    text-decoration: underline;
+}
+
+/* Ballot page has a fixed submit bar — keep credit above the home indicator. */
+.vote-credit--inline {
+    padding: 0.35rem 0 0;
+}
+
 .ia-header-band .ia-text-gray { color: rgba(255, 255, 255, 0.7) !important; }
 
 .myths-list--phone {

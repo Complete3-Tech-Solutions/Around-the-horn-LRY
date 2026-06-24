@@ -96,6 +96,7 @@
                     <p class="mt-2 text-center text-[11px] ia-text-gray leading-snug">
                         One vote per device · Results are on the big screen
                     </p>
+                    {% include 'components/_vote_footer.html.twig' with { inline: true } %}
                 </div>
             </div>
             {{ form_rest(form) }}
