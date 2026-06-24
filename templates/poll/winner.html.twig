@@ -41,9 +41,7 @@
                         {% endfor %}
                     </div>
                     {% if champion.tie %}
-                        <p class="text-sm mt-4 ia-text-gray">Co-champions — {{ champion.points }} round{{ champion.points == 1 ? '' : 's' }} won each</p>
-                    {% else %}
-                        <p class="text-sm mt-4 ia-text-gray">{{ champion.points }} round{{ champion.points == 1 ? '' : 's' }} won</p>
+                        <p class="text-sm mt-4 ia-text-gray">Co-champions</p>
                     {% endif %}
                 {% else %}
                     <h1 class="text-3xl font-display mt-3" style="font-weight:200;">Thanks for voting!</h1>

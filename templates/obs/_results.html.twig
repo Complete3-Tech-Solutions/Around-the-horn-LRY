@@ -21,9 +21,7 @@
                 {% endfor %}
             </div>
             {% if champion.tie %}
-                <div class="obs-wsector">Co-champions — {{ champion.points }} round{{ champion.points == 1 ? '' : 's' }} won each</div>
-            {% else %}
-                <div class="obs-wsector">{{ champion.points }} round{{ champion.points == 1 ? '' : 's' }} won</div>
+                <div class="obs-wsector">Co-champions</div>
             {% endif %}
         {% else %}
             <h1 class="obs-wname">—</h1>
