@@ -374,8 +374,8 @@ class Poll
     /**
      * Round metadata in the shape the /obs + /poll templates consume. Mirrors
      * the array EventConfig::round() used to return, but sourced from this
-     * poll's own columns so the moderator can edit it live. Falls back to the
-     * debate title for the label and a generic prompt for the question.
+     * poll's own columns so the moderator can edit it live. The short chip
+     * label falls back to "Round N"; the debate headline stays in `title`.
      *
      * @return array{number:int,key:string,label:string,title:string,question:string,myths:list<string>}|null
      */
@@ -388,7 +388,7 @@ class Poll
         return [
             'number' => $this->roundNumber,
             'key' => 'Round '.$this->roundNumber,
-            'label' => $this->roundLabel ?: ($this->title ?? ''),
+            'label' => $this->roundLabel ?: ('Round '.$this->roundNumber),
             'title' => $this->title ?? '',
             'question' => $this->getVotingPrompt(),
             'myths' => $this->getMyths(),

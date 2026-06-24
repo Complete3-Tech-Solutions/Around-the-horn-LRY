@@ -27,7 +27,7 @@
     {% set hasMyths = myths|length > 0 %}
     <div class="obs-body{% if hasMyths %} obs-body--myths{% endif %}"{% if votingPhase|default(false) %} x-data="voteTimer('{{ activePoll.startAt|date('Y-m-d\\TH:i:s\\Z') }}', '{{ activePoll.endAt|date('Y-m-d\\TH:i:s\\Z') }}')"{% endif %}>
         <div class="obs-round">
-            <span class="pill">{{ round and round.label ? round.label : (round ? round.key : 'Live vote') }}</span>
+            <span class="pill">{{ activePoll.roundLabel ?: round.key }}</span>
             {% if votingPhase|default(false) %}
                 <div class="obs-vote-timer" :class="{ warn: isWarn, waiting: waiting, expired: isExpired }">
                     <span class="n" x-text="display">--:--</span>
