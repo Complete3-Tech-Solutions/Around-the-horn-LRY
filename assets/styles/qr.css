@@ -1,6 +1,5 @@
-/* Around the Horn — QR browser source. Transparent page so it composites over
-   video; the QR sits on a white, brand-bordered card for reliable scanning.
-   Matches the Sloss Tech broadcast look (purple #2B266D / cyan #04B2E2). */
+/* Around the Horn — /obs/qr browser source. Transparent page for compositing;
+   the card scales to any LED / OBS canvas via the 720×720 stage + JS fit. */
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700;800&display=swap');
 
 :root {
@@ -9,23 +8,114 @@
     --ia-black: #100d28;
     --ia-gray: #8a90ad;
     --ia-font-body: "Jost", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --qrx-ref: 720px;
 }
 
-body { margin: 0; padding: 0; background: transparent !important; font-family: var(--ia-font-body); }
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--ia-font-body);
+}
 
-.qrx { display: flex; justify-content: center; align-items: center; padding: 12px; }
+/* Background modes — same vocabulary as /obs (?bg=transparent|white|chroma|stage). */
+.qrx-bg-transparent { background: transparent !important; }
+.qrx-bg-white { background: #ffffff !important; }
+.qrx-bg-chroma { background: #00ff00 !important; }
+.qrx-bg-stage { background: #f4f6fb !important; }
+
+#qrx-stage {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: var(--qrx-ref);
+    height: var(--qrx-ref);
+    transform-origin: center center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qrx {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
 .qrx-card {
-    background: #fff; border-radius: 20px; box-shadow: 0 14px 44px rgba(16, 13, 40, 0.22);
-    padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 13px; width: 330px;
-    position: relative; overflow: hidden; border: 1px solid #e3e7f2;
+    background: #fff;
+    border-radius: 28px;
+    box-shadow: 0 18px 56px rgba(16, 13, 40, 0.22);
+    padding: 36px 40px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    max-width: 560px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #e3e7f2;
+    box-sizing: border-box;
 }
-.qrx-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 7px; background: linear-gradient(90deg, var(--ia-purple), var(--ia-cyan)); }
-.qrx-logo { width: 50px; height: 50px; margin-top: 4px; }
-.qrx-img { width: 264px; height: 264px; display: block; background: #ffffff; padding: 6px; border-radius: 12px; }
-.qrx-label { font-weight: 800; font-size: 17px; color: var(--ia-purple); text-align: center; line-height: 1.3; }
-.qrx-code { font-size: 13px; color: var(--ia-gray); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
 
-/* Dark theme (moderator-toggled): dark card frame, light label. */
-.qrx-theme-dark .qrx-card { background: #161241; border-color: rgba(255, 255, 255, 0.12); }
+.qrx-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(90deg, var(--ia-purple), var(--ia-cyan));
+}
+
+.qrx-logo {
+    width: 72px;
+    height: 72px;
+    margin-top: 8px;
+}
+
+.qrx-img {
+    width: min(100%, 420px);
+    height: auto;
+    aspect-ratio: 1;
+    display: block;
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 16px;
+    box-sizing: border-box;
+}
+
+.qrx-label {
+    font-weight: 800;
+    font-size: 32px;
+    color: var(--ia-purple);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.qrx-code {
+    font-size: 18px;
+    color: var(--ia-gray);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.35;
+    max-width: 28em;
+}
+
+/* Dark theme (moderator-toggled). */
+.qrx-theme-dark .qrx-card {
+    background: #161241;
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 18px 56px rgba(0, 0, 0, 0.45);
+}
+
 .qrx-theme-dark .qrx-label { color: #ffffff; }
 .qrx-theme-dark .qrx-code { color: #9aa0c2; }

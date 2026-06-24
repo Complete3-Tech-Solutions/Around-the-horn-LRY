@@ -43,13 +43,14 @@ class ObsController extends AbstractController
     public function index(Request $request): Response
     {
         $dark = 'innovate-dark' === $this->eventState->getTheme();
-        $voteUrl = $this->generateUrl('app_vote_live', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        $voteUrl = $this->voteUrl($request);
+        $qr = $this->qrService->generateQrCode($voteUrl);
 
         return $this->render('obs/index.html.twig', [
             'bg' => $this->resolveBg($request, $dark),
             'dark' => $dark,
             'screen' => $request->query->get('screen'),
-            'qr' => $this->qrService->generateQrCode($voteUrl),
+            'qr' => $qr,
         ]);
     }
 
@@ -75,7 +76,7 @@ class ObsController extends AbstractController
             $screen = 'intro';
         }
 
-        $voteUrl = $this->generateUrl('app_vote_live', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        $voteUrl = $this->voteUrl($request);
         $qr = $this->qrService->generateQrCode($voteUrl);
 
         // Between-rounds recap: who took the last round, what's coming next.
@@ -114,28 +115,41 @@ class ObsController extends AbstractController
     }
 
     #[Route('/obs/qr', name: 'app_obs_qr')]
-    public function qr(): Response
+    public function qr(Request $request): Response
     {
+        $dark = 'innovate-dark' === $this->eventState->getTheme();
+        $stage = $this->pollService->getStagePoll();
+
         return $this->render('obs/qr.html.twig', [
-            'dark' => 'innovate-dark' === $this->eventState->getTheme(),
+            'dark' => $dark,
+            'bg' => $this->resolveBg($request, $dark),
+            'qr' => $this->qrService->generateQrCode($this->voteUrl($request)),
+            'poll' => $stage,
+            'standby' => null === $stage,
         ]);
     }
 
     #[Route('/obs/qr/results', name: 'app_obs_qr_results')]
-    public function qrResults(): Response
+    public function qrResults(Request $request): Response
     {
-        $poll = $this->pollService->getStagePoll();
-
-        if (null === $poll) {
-            return new Response('');
-        }
-
-        $url = $this->generateUrl('app_vote_live', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        $stage = $this->pollService->getStagePoll();
 
         return $this->render('obs/_qr_results.html.twig', [
-            'qrCode' => $this->qrService->generateQrCode($url),
-            'poll' => $poll,
+            'qrCode' => $this->qrService->generateQrCode($this->voteUrl($request)),
+            'poll' => $stage,
+            'standby' => null === $stage,
         ]);
+    }
+
+    /**
+     * Absolute vote URL encoded in the QR. Uses the incoming request's host so
+     * phones scanning at the venue reach the same origin the crew loaded in OBS
+     * (not an internal Docker hostname or CLI default_uri).
+     */
+    private function voteUrl(Request $request): string
+    {
+        return $request->getSchemeAndHttpHost()
+            .$this->generateUrl('app_vote_live', [], UrlGeneratorInterface::ABSOLUTE_PATH);
     }
 
     private function resolveBg(Request $request, bool $dark): string

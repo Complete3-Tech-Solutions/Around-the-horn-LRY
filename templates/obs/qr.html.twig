@@ -1,8 +1,35 @@
 {% extends 'base_qr.html.twig' %}
 
-{% block qr_body_class %}qrx-theme-{{ dark|default(false) ? 'dark' : 'light' }}{% endblock %}
+{% block qr_body_class %}qrx-bg-{{ bg|default('transparent') }}{% endblock %}
 
 {% block body %}
-<div hx-get="{{ path('app_obs_qr_results') }}" hx-trigger="every 2s">
+{# 720×720 design canvas — scaled uniformly to any OBS browser-source / LED size
+   (set the source to your wall's native resolution; contain, never crop). #}
+<div id="qrx-stage" class="qrx-theme-{{ dark|default(false) ? 'dark' : 'light' }}">
+    <div id="qrx-live"
+         hx-get="{{ path('app_obs_qr_results') }}"
+         hx-trigger="load, every 2s"
+         hx-swap="innerHTML">
+        {% include 'obs/_qr_results.html.twig' with {
+            qrCode: qr,
+            poll: poll|default(null),
+            standby: standby|default(false),
+        } %}
+    </div>
 </div>
+
+<script>
+    (function () {
+        var stage = document.getElementById('qrx-stage');
+        if (!stage) return;
+        var REF = 720;
+        function fit() {
+            var scale = Math.min(window.innerWidth / REF, window.innerHeight / REF);
+            stage.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
+        }
+        window.addEventListener('resize', fit);
+        window.addEventListener('orientationchange', fit);
+        fit();
+    })();
+</script>
 {% endblock %}

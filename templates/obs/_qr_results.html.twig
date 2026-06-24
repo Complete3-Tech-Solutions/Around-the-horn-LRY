@@ -1,10 +1,14 @@
-{% if qrCode %}
-    <div class="qrx">
-        <div class="qrx-card">
-            <img class="qrx-logo" src="/img/logo.svg" alt="Innovate Alabama">
+<div class="qrx">
+    <div class="qrx-card">
+        <img class="qrx-logo" src="/img/logo.svg" alt="Innovate Alabama">
+        {% if qrCode %}
             <img class="qrx-img" src="{{ qrCode }}" alt="Scan to vote">
-            <div class="qrx-label">Scan to vote</div>
-            {% if poll is defined and poll and poll.roundNumber %}<div class="qrx-code">Round {{ poll.roundNumber }}</div>{% endif %}
-        </div>
+        {% endif %}
+        <div class="qrx-label">Scan to <b>vote</b></div>
+        {% if poll is defined and poll and poll.roundNumber %}
+            <div class="qrx-code">Round {{ poll.roundNumber }}</div>
+        {% elseif standby|default(false) %}
+            <div class="qrx-code">Join now — voting opens with each round</div>
+        {% endif %}
     </div>
-{% endif %}
+</div>
