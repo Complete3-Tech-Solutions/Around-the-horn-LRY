@@ -44,9 +44,12 @@
             {% set myths = round ? round.myths|default([]) : [] %}
             {% set hasMyths = myths|length > 0 %}
             {% if hasMyths %}
-                <h1 class="text-2xl sm:text-3xl font-display leading-tight mb-4" style="font-weight:200;">{{ round.title }}</h1>
-                {% include 'components/_myths_list.html.twig' with { myths: myths, variant: 'phone' } %}
-                <p class="text-lg font-semibold leading-snug mb-6">{{ poll.votingPrompt }}</p>
+                {% include 'components/_myth_round_header.html.twig' with {
+                    myths: myths,
+                    title: round.title,
+                    roundQuestion: poll.roundQuestion,
+                    votingPrompt: poll.votingPrompt,
+                } %}
             {% else %}
                 <h1 class="text-2xl sm:text-3xl font-display leading-tight mb-6" style="font-weight:200;">{{ poll.votingPrompt }}</h1>
             {% endif %}

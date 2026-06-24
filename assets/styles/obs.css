@@ -286,42 +286,43 @@ html, body {
 }
 
 .obs-body--myths .obs-question {
-    margin-bottom: 36px;
+    font-size: 56px;
+    margin-bottom: 28px;
 }
 
 .obs-myth-vote {
     font-weight: 800;
-    font-size: 48px;
-    line-height: 1.12;
+    font-size: 34px;
+    line-height: 1.15;
     color: var(--obs-accent);
     max-width: 1640px;
-    margin: 0 0 40px;
+    margin: 0 0 32px;
 }
 
 .myths-list--obs {
     list-style: none;
-    margin: 0 0 32px;
+    margin: 0 0 24px;
     padding: 0;
     max-width: 1640px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 14px;
 }
 
 .myths-list--obs .myths-list-item {
     display: flex;
     align-items: baseline;
-    gap: 24px;
-    padding: 20px 28px;
+    gap: 18px;
+    padding: 14px 20px;
     background: var(--obs-chip);
-    border-left: 6px solid var(--ia-cyan);
-    border-radius: 0 12px 12px 0;
+    border-left: 5px solid var(--ia-cyan);
+    border-radius: 0 10px 10px 0;
 }
 
 .myths-list--obs .myths-list-num {
     flex-shrink: 0;
     font-weight: 800;
-    font-size: 44px;
+    font-size: 28px;
     line-height: 1;
     color: var(--ia-cyan);
     min-width: 1.1em;
@@ -329,8 +330,8 @@ html, body {
 
 .myths-list--obs .myths-list-text {
     font-weight: 600;
-    font-size: 40px;
-    line-height: 1.2;
+    font-size: 26px;
+    line-height: 1.25;
     color: var(--obs-text);
 }
 

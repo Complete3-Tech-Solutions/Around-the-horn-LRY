@@ -1,0 +1,24 @@
+{# Myth round headline + numbered list. Vote question only when it differs from the title
+   (getVotingPrompt() falls back to title when roundQuestion is empty). #}
+{% set myths = myths|default([]) %}
+{% set title = title|default('') %}
+{% set voteLine = roundQuestion|default('') ?: (votingPrompt|default('') != title ? votingPrompt|default('') : '') %}
+{% set variant = variant|default('phone') %}
+
+{% if title %}
+    {% if variant == 'obs' %}
+        <h1 class="obs-question">{{ title }}</h1>
+    {% else %}
+        <h1 class="text-xl sm:text-2xl font-display leading-tight mb-2" style="font-weight:200;">{{ title }}</h1>
+    {% endif %}
+{% endif %}
+
+{% include 'components/_myths_list.html.twig' with { myths: myths, variant: variant } %}
+
+{% if voteLine %}
+    {% if variant == 'obs' %}
+        <p class="obs-myth-vote">{{ voteLine }}</p>
+    {% else %}
+        <p class="text-sm font-semibold leading-snug mb-4 text-base-content/90">{{ voteLine }}</p>
+    {% endif %}
+{% endif %}

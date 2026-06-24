@@ -36,9 +36,13 @@
             {% endif %}
         </div>
         {% if hasMyths %}
-            <h1 class="obs-question">{{ round.title }}</h1>
-            {% include 'components/_myths_list.html.twig' with { myths: myths } %}
-            <p class="obs-myth-vote">{{ activePoll.votingPrompt }}</p>
+            {% include 'components/_myth_round_header.html.twig' with {
+                myths: myths,
+                title: round.title,
+                roundQuestion: poll.roundQuestion,
+                votingPrompt: poll.votingPrompt,
+                variant: 'obs',
+            } %}
         {% else %}
             <h1 class="obs-question">{{ activePoll.votingPrompt }}</h1>
         {% endif %}
